@@ -1,0 +1,57 @@
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+<dependency>
+    <groupId>org.springdoc</groupId>
+    <artifactId>springdoc-openapi-ui</artifactId>
+    <version>1.6.4</version> <!-- Replace with the latest version -->
+</dependency>
+
+// SecurityConfig.java
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.authorizeRequests()
+            .antMatchers("/api/**").authenticated() // Secure APIs
+            .anyRequest().permitAll() // Allow other requests
+            .and()
+            .formLogin(); // Enable form login
+
+        // Enable Swagger UI without authentication
+        http.authorizeRequests()
+            .antMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html", "/webjars/**").permitAll()
+            .anyRequest().authenticated();
+
+        http.csrf().disable();
+    }
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        // In-memory authentication example
+        auth.inMemoryAuthentication()
+            .withUser("user")
+            .password("{noop}password")
+            .roles("USER");
+    }
+}
+
+// SwaggerConfig.java
+@Configuration
+public class SwaggerConfig {
+    
+    @Bean
+    public OpenAPI customOpenAPI() {
+        return new OpenAPI()
+            .info(new Info().title("Your API Documentation").version("1.0.0"));
+    }
+}
+
+
+# application.properties
+spring.security.enabled=false
+
+
