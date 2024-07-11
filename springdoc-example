@@ -1,3 +1,6 @@
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+
+
 <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-security</artifactId>
