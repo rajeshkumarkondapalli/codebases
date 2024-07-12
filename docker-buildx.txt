@@ -1,6 +1,19 @@
 Docker multi platform commands
 
 
+docker buildx create --name m1 --use
+docker buildx inspect m1 --bootstrap
+
+docker buildx build --platform linux/amd64,linux/arm64 -t mydockerhubusername/myimage:latest --load .
+docker push mydockerhubusername/myimage:latest
+
+docker buildx build --platform linux/amd64,linux/arm64 -t username/repository:tag --push .
+
+This example creates a builder instance, inspects it, 
+and builds a multi-platform image for linux/amd64 and linux/arm64, 
+tagging it with username/repository:tag and pushing it to the Docker registry.
+
+----------------------------------------------
 
 - Create a builder instance.
 docker buildx create --name m1 --use
@@ -23,14 +36,8 @@ docker buildx build --platform linux/amd64,linux/arm64 -t username/repository:ta
 docker buildx build --platform linux/amd64,linux/arm64 -t username/repository:tag --load .
 docker buildx build --platform linux/amd64,linux/arm64 -t username/repository:tag --load .
 
-----------------------------------------------
-This example creates a builder instance, inspects it, 
-and builds a multi-platform image for linux/amd64 and linux/arm64, 
-tagging it with username/repository:tag and pushing it to the Docker registry.
 
-docker buildx create --name m1 --use
-docker buildx inspect m1 --bootstrap
-docker buildx build --platform linux/amd64,linux/arm64 -t username/repository:tag --push .
+
 
 
 
