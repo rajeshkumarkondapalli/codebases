@@ -1,1 +1,1 @@
-# genai
+# code snippets
