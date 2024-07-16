@@ -77,3 +77,71 @@ This template includes other FTL files (header.ftl and footer.ftl) to separate c
 This example demonstrates direct output, escaping HTML tags, and basic interpolation for displaying data in different ways.
 
 These examples provide a starting point for understanding FTL templates. You can combine these elements and experiment further to create powerful and dynamic web pages. Remember to refer to the official FreeMarker documentation for a comprehensive guide and advanced features.
+
+
+
+
+
+## FTL (FreeMarker Template Language) Parsing Errors:
+
+FTL parsing errors occur when the template engine encounters syntax issues or inconsistencies in your FreeMarker template. Here are some common parsing errors you might encounter:
+
+**1. Syntax Errors:**
+
+* **Missing closing tag:**  Missing closing curly braces `}` for directives or expressions.
+* **Invalid variable name:** Using invalid characters (e.g., spaces, special characters) in variable names.
+* **Incorrect directive usage:** Using incorrect parameters or syntax for directives like `#if`, `#list`, or `#assign`.
+* **Unbalanced quotes:** Incorrectly using single quotes (`'`) or double quotes (`"`) within strings or directives.
+* **Invalid expression:** Using an invalid expression, such as referencing a non-existent variable or using incorrect operators.
+* **Missing semicolon:** Missing semicolons in expressions that require them, like in `#assign x = 1 + 2;`.
+* **Invalid interpolation:** Incorrectly using ${} for interpolating variables within strings.
+
+**2. Data Model Errors:**
+
+* **Undefined variable:** Trying to access a variable that doesn't exist in the data model.
+* **Incorrect data type:** Using a variable of a type that's not expected for a specific directive or expression (e.g., using a string where a number is required).
+* **NullPointerException:** Accessing a null value within the data model without checking for it first.
+* **Missing or invalid data:** The data model provided to the template doesn't contain the required data.
+
+**3. Template Structure Errors:**
+
+* **Invalid template nesting:** Improper nesting of directives or blocks of code.
+* **Duplicate definitions:** Defining a variable or macro with the same name multiple times.
+* **Circular dependencies:** Creating a circular dependency between macros or templates.
+* **Unclosed blocks:**  Missing the closing tag for a directive or macro definition.
+
+**4. Configuration Errors:**
+
+* **Incorrect configuration:** The FreeMarker configuration file (usually `freemarker.properties`) contains incorrect settings.
+* **Missing dependencies:** The required FreeMarker libraries are not included in the project.
+* **Incorrect classpath:** The FreeMarker library is not located in the correct classpath.
+
+**Examples:**
+
+* **Missing closing tag:** 
+   ```ftl
+   #if (x == 1)
+       Hello, World!
+   ```
+   This will throw an error because the `#if` directive is not closed.
+
+* **Undefined variable:**
+   ```ftl
+   ${undefinedVariable} 
+   ```
+   This will throw an error because `undefinedVariable` doesn't exist in the data model.
+
+* **Incorrect interpolation:** 
+   ```ftl
+   This is a ${ variable }
+   ```
+   This will throw an error because it should be ${variable} without spaces.
+
+**Debugging Tips:**
+
+* **Error messages:** Carefully read the error messages provided by FreeMarker. They often contain valuable information about the location of the error and the cause.
+* **Use `#macro` and `#include` for code reusability:** This can help you organize your templates and make them easier to debug.
+* **Use `#ftl` comments for testing and debugging:** This allows you to temporarily disable parts of your template to isolate problems.
+* **Use a debugger:** Many IDEs offer debugging tools that allow you to step through your FreeMarker code and inspect variables and data models.
+
+By understanding the common parsing errors and following these debugging tips, you can quickly resolve FTL parsing issues and create robust, efficient FreeMarker templates.
