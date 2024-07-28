@@ -1,0 +1,182 @@
+Apache FreeMarker Template Language (FTL) can be used to generate JSON by creating a template that outputs JSON format. This allows you to define a template with placeholders that will be replaced by actual values when the template is processed.
+
+Here's an example of how to create an FTL template that generates JSON:
+
+Create the FTL template:
+
+ftl
+
+{
+  "name": "${name}",
+  "age": ${age},
+  "email": "${email}",
+  "address": {
+    "street": "${address.street}",
+    "city": "${address.city}",
+    "zipcode": "${address.zipcode}"
+  }
+}
+Prepare the data model in Java:
+
+java
+
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
+
+public class FreeMarkerJsonExample {
+    public static void main(String[] args) throws IOException, TemplateException {
+        // Create and configure the FreeMarker configuration
+        Configuration cfg = new Configuration(Configuration.VERSION_2_3_30);
+        cfg.setClassForTemplateLoading(FreeMarkerJsonExample.class, "/templates");
+
+        // Load the template
+        Template template = cfg.getTemplate("json_template.ftl");
+
+        // Prepare the data model
+        Map<String, Object> data = new HashMap<>();
+        data.put("name", "John Doe");
+        data.put("age", 30);
+        data.put("email", "john.doe@example.com");
+
+        Map<String, String> address = new HashMap<>();
+        address.put("street", "123 Main St");
+        address.put("city", "Springfield");
+        address.put("zipcode", "12345");
+
+        data.put("address", address);
+
+        // Process the template
+        StringWriter out = new StringWriter();
+        template.process(data, out);
+
+        // Output the JSON
+        System.out.println(out.toString());
+    }
+}
+Place the template file (json_template.ftl) in the resources/templates directory.
+
+Run the Java program: When you run the Java program, it will process the FTL template with the provided data model and generate the following JSON output:
+
+json
+
+{
+  "name": "John Doe",
+  "age": 30,
+  "email": "john.doe@example.com",
+  "address": {
+    "street": "123 Main St",
+    "city": "Springfield",
+    "zipcode": "12345"
+  }
+}
+This approach allows you to dynamically generate JSON from a template, making it easier to maintain and update the JSON structure as needed.
+
+
+# -------------------------
+
+
+
+
+FreeMarker macros allow you to encapsulate reusable template logic. Here’s an example of how you can define and use a macro in FreeMarker.
+
+Example of a FreeMarker Macro
+Define the macro in your FTL template:
+
+ftl
+
+<#macro personDetails name age email>
+  {
+    "name": "${name}",
+    "age": ${age},
+    "email": "${email}"
+  }
+</#macro>
+Use the macro to generate JSON objects:
+
+ftl
+
+[
+  <#-- First person details -->
+  <@personDetails name="John Doe" age=30 email="john.doe@example.com"/>,
+
+  <#-- Second person details -->
+  <@personDetails name="Jane Smith" age=25 email="jane.smith@example.com"/>
+]
+Prepare the data model in Java (if needed):
+
+java
+
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
+
+public class FreeMarkerMacroExample {
+    public static void main(String[] args) throws IOException, TemplateException {
+        // Create and configure the FreeMarker configuration
+        Configuration cfg = new Configuration(Configuration.VERSION_2_3_30);
+        cfg.setClassForTemplateLoading(FreeMarkerMacroExample.class, "/templates");
+
+        // Load the template
+        Template template = cfg.getTemplate("macro_example.ftl");
+
+        // Prepare the data model
+        Map<String, Object> data = new HashMap<>();
+
+        // Process the template
+        StringWriter out = new StringWriter();
+        template.process(data, out);
+
+        // Output the JSON
+        System.out.println(out.toString());
+    }
+}
+Place the template file (macro_example.ftl) in the resources/templates directory.
+
+The final FTL template (macro_example.ftl):
+ftl
+
+<#-- Define the macro for person details -->
+<#macro personDetails name age email>
+  {
+    "name": "${name}",
+    "age": ${age},
+    "email": "${email}"
+  }
+</#macro>
+
+[
+  <#-- First person details -->
+  <@personDetails name="John Doe" age=30 email="john.doe@example.com"/>,
+
+  <#-- Second person details -->
+  <@personDetails name="Jane Smith" age=25 email="jane.smith@example.com"/>
+]
+When you run the Java program, it will process the FTL template and generate the following JSON output:
+
+json
+
+[
+  {
+    "name": "John Doe",
+    "age": 30,
+    "email": "john.doe@example.com"
+  },
+  {
+    "name": "Jane Smith",
+    "age": 25,
+    "email": "jane.smith@example.com"
+  }
+]
+This example shows how to use macros in FreeMarker to encapsulate and reuse template logic, making your templates cleaner and more maintainable.
+
