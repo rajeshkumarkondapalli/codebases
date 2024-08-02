@@ -1,0 +1,61 @@
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class PingTest {
+    public static void main(String[] args) {
+        if (args.length != 1) {
+            System.out.println("Usage: java PingTest <hostname>");
+            return;
+        }
+
+        String hostname = args[0];
+        try {
+            ProcessBuilder processBuilder = new ProcessBuilder("ping", "-c", "5", hostname);
+            Process process = processBuilder.start();
+
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            int received = 0;
+            double totalRtt = 0.0;
+            double minRtt = Double.MAX_VALUE;
+            int count = 0;
+
+            Pattern rttPattern = Pattern.compile("time=(\\d+\\.\\d+) ms");
+
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+
+                Matcher matcher = rttPattern.matcher(line);
+                if (matcher.find()) {
+                    double rtt = Double.parseDouble(matcher.group(1));
+                    totalRtt += rtt;
+                    minRtt = Math.min(minRtt, rtt);
+                    count++;
+                }
+
+                if (line.contains("bytes from")) {
+                    received++;
+                }
+            }
+
+            process.waitFor();
+
+            int sent = 5;
+            int lost = sent - received;
+            double packetLoss = (lost / (double) sent) * 100;
+            double avgRtt = totalRtt / count;
+
+            System.out.printf("Packet Loss: %.2f%%\n", packetLoss);
+            System.out.printf("RTT Average: %.2f ms\n", avgRtt);
+            System.out.printf("RTT Minimum: %.2f ms\n", minRtt);
+
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+javac PingTest.java
+java PingTest google.com
