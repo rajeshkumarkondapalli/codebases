@@ -1,3 +1,188 @@
+## Advanced Apache FreeMarker Concepts with Examples
+
+FreeMarker offers powerful features beyond basic templating. Here are some advanced concepts with illustrative examples:
+
+**1. Custom Directives and Methods:**
+
+* **Creating Custom Directives:** Extend FreeMarker's functionality by writing your own directives for specific tasks.
+
+   ```java
+   public class MyCustomDirective extends TemplateDirectiveModel {
+       @Override
+       public void execute(Environment env, Map params, TemplateModel[] loopVars, TemplateDirectiveBody body)
+           throws TemplateException, IOException {
+           // Access data from params map
+           String name = (String) params.get("name");
+           // Process data and render content
+           env.getOut().write("Hello, " + name + "!");
+       }
+   }
+   ```
+
+   **Usage in template:**
+
+   ```html
+   <#assign myDirective = "com.example.MyCustomDirective" />
+   <#myDirective name="John Doe" />
+   ```
+
+* **Defining Custom Methods:** Create reusable functions for data manipulation within templates.
+
+   ```java
+   public class MyUtils {
+       public static String capitalize(String text) {
+           return text.substring(0, 1).toUpperCase() + text.substring(1);
+       }
+   }
+   ```
+
+   **Usage in template:**
+
+   ```html
+   <#assign myUtils = "com.example.MyUtils" />
+   ${myUtils.capitalize("hello world")}
+   ```
+
+**2. Macro Definitions and Recursion:**
+
+* **Defining Macros:** Create reusable template blocks for repeated structures.
+
+   ```html
+   <#macro displayUser(user)>
+       <h3>${user.name}</h3>
+       <p>Email: ${user.email}</p>
+   </macro>
+
+   <#list users as user>
+       <#displayUser user />
+   </list>
+   ```
+
+* **Recursive Macros:** Create macros that call themselves, enabling complex structure generation.
+
+   ```html
+   <#macro recursiveList(items)>
+       <#if items?size gt 0>
+           <ul>
+               <#list items as item>
+                   <li>${item}</li>
+                   <#if item?has_content>
+                       <#recursiveList item>
+                   </#fi>
+               </</list>
+           </ul>
+       </#if>
+   </macro>
+
+   <#recursiveList items=[ "root", ["child1", "child2"], "sibling"] />
+   ```
+
+**3. Advanced Data Structures:**
+
+* **Sequences and Hashes:** Work with lists and maps effectively for data management.
+
+   ```java
+   <#assign myList = ["apple", "banana", "cherry"]>
+   <#list myList as item>
+       ${item}
+   </</list>
+
+   <#assign myMap = { "name": "John", "age": 30 }>
+   ${myMap.name} is ${myMap.age} years old.
+   ```
+
+* **Nested Data Structures:** Traverse nested objects and arrays within your templates.
+
+   ```java
+   <#assign user = { "name": "John", "address": { "street": "Main St", "city": "New York" }}>
+   ${user.name} lives at ${user.address.street}, ${user.address.city}
+   ```
+
+**4. Template Inheritance and Partials:**
+
+* **Template Inheritance:**  Define a base template with common elements, then extend it with specific content in child templates.
+
+   **Base Template (base.ftl):**
+
+   ```html
+   <!DOCTYPE html>
+   <html>
+   <head>
+       <title>${title}</title>
+   </head>
+   <body>
+       <header>
+           <h1>My Website</h1>
+       </header>
+       <main>
+           <@body />
+       </main>
+       <footer>
+           Copyright &copy; 2023
+       </footer>
+   </body>
+   </html>
+   ```
+
+   **Child Template (index.ftl):**
+
+   ```html
+   <@base title="Home">
+       <h2>Welcome to our website!</h2>
+   </@base>
+   ```
+
+* **Partials (Includes):** Reuse small template snippets across different templates.
+
+   **Partial (header.ftl):**
+
+   ```html
+   <header>
+       <h1>My Website</h1>
+   </header>
+   ```
+
+   **Main Template:**
+
+   ```html
+   <@include "header.ftl" />
+   <main>
+       <!-- content -->
+   </main>
+   ```
+
+**5. Error Handling and Debugging:**
+
+* **Template Error Handling:** Use `#if ... #else` blocks to handle missing data or invalid values.
+
+   ```html
+   <#if user.name?exists>
+       ${user.name}
+   <#else>
+       User name not available.
+   </#if>
+   ```
+
+* **Debugging:** Enable FreeMarker's built-in debug mode for detailed error messages and template information.
+
+   ```java
+   Configuration cfg = new Configuration(Configuration.VERSION_2_3_30);
+   cfg.setTemplateLoader(new FileTemplateLoader(new File("templates")));
+   cfg.setLogTemplateExceptions(false); // Enable detailed error reporting
+   cfg.setWrapUncheckedExceptions(true); // Wrap exceptions for easier handling
+   ```
+
+**6. Other Advanced Features:**
+
+* **Custom Objects and Collections:** Create custom Java classes and collections to be used within your templates.
+* **Built-in Filters:** Utilize FreeMarker's rich set of built-in filters for data manipulation and formatting.
+* **Internationalization and Localization:** Implement multilingual support using FreeMarker's localization features.
+* **Extending FreeMarker's Functionality:** Develop plugins and custom extensions to tailor FreeMarker to your specific needs.
+
+These examples demonstrate just a few of FreeMarker's powerful capabilities. Explore the official documentation and online resources for a deeper dive into advanced templating techniques and further expand your FreeMarker expertise.
+
+
+
 ```ftl
 <#assign myList = ["apple", "banana", "cherry"]>
 <fruits>
