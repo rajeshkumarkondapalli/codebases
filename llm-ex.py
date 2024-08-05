@@ -8,7 +8,7 @@
 
 # Load and Use the Model:
 # Use the transformers library to load the model and tokenizer, and then generate predictions.
-# from transformers import AutoModelForMaskedLM, AutoTokenizer
+from transformers import AutoModelForMaskedLM, AutoTokenizer
 import torch
 
 # Load the tokenizer and model
@@ -59,4 +59,22 @@ print(f"Predicted word: {predicted_token}")
 # Running the Code
 # You can run the provided Python code in your local environment. Make sure you have installed the necessary libraries and have a stable internet connection for downloading the pre-trained model and tokenizer.
 
-This example demonstrates a simple masked language modeling task. You can adapt it for other tasks like text generation, sequence classification, etc., by using the appropriate model class from the transformers library.
+# This example demonstrates a simple masked language modeling task. You can adapt it for other tasks like text generation, sequence classification, etc., by using the appropriate model class from the transformers library.
+
+#------
+# from transformers import AutoModelForMaskedLM, AutoTokenizer
+
+# # Download and cache the tokenizer and model
+# tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
+# model = AutoModelForMaskedLM.from_pretrained("distilbert-base-uncased")
+
+# print("Model and tokenizer downloaded and cached successfully.")
+
+# #------
+# from transformers import cached_path
+
+# # Print the cache directory
+# print(cached_path("."))
+
+# tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased", cache_dir="./my_model_cache")
+# model = AutoModelForMaskedLM.from_pretrained("distilbert-base-uncased", cache_dir="./my_model_cache")
