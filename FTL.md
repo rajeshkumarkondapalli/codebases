@@ -59,7 +59,7 @@ def main(input_path, output_dir=None):
 if __name__ == "__main__":
     import argparse
 
-    parser = argparse.ArgumentParser(description="Convert Groovy files to FreeMarker templates.")
+    parser = argparse.ArgumentParser(description="Convert files.")
     parser.add_argument("input", help="Path to the Groovy file or directory containing Groovy files.")
     parser.add_argument("-o", "--output", help="Output directory for converted files. Defaults to the input directory.")
     
