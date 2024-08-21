@@ -15,16 +15,7 @@ public class RestExchangeExample {
         headers.set("Content-Type", "application/json");
 
         // Create the payload
-        String payload = "{\n" +
-                "  \"netop:node\": [\n" +
-                "    {\n" +
-                "      \"no-id\": \"AB\",\n" +
-                "      \"dalk\": {\n" +
-                "        \"dalkaed\": false\n" +
-                "      }\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}";
+        String payload = "{payload}";
 
         // Create the request entity
         HttpEntity<String> requestEntity = new HttpEntity<>(payload, headers);
