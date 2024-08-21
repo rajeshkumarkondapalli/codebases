@@ -68,8 +68,8 @@ if __name__ == "__main__":
     main(args.input, args.output)
 
 
-#python groovy_to_freemarker.py path/to/your/file.groovy
-#python groovy_to_freemarker.py path/to/your/directory
-#python groovy_to_freemarker.py path/to/your/directory -o path/to/output/directory
+#python convert.py path/to/your/file.groovy
+#python convert.py path/to/your/directory
+#python convert.py path/to/your/directory -o path/to/output/directory
 
     
