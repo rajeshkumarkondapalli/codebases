@@ -13,6 +13,33 @@ ResponseEntity<String> response = restTemplate.exchange(
 ); 
 
 
+HttpMethod httpMethod = getRequestType(command.getRequestType());
+List<String> combinedResponses = new ArrayList<>();
+HttpStatus finalStatus = HttpStatus.OK; // Default to 200 OK
+
+for (String podId : odlPods) {
+    ResponseEntity<String> response = invokeOdlRequest(podId, deviceName, httpMethod);
+
+    if (response != null) {
+        combinedResponses.add(response.getBody());
+
+        // Check if the response status is 4xx or 5xx
+        if (response.getStatusCode().is4xxClientError() || response.getStatusCode().is5xxServerError()) {
+            finalStatus = response.getStatusCode(); // Update final status if any request fails
+        }
+
+        LOG.info(response.getStatusCode() + " - " + response.getBody());
+    }
+}
+
+// Combine all responses into a single string, you can choose any delimiter (like new line, comma, etc.)
+String combinedResponseBody = String.join("\n", combinedResponses);
+
+// Return final combined response with the appropriate status code
+ResponseEntity<String> finalResponse = new ResponseEntity<>(combinedResponseBody, finalStatus);
+return finalResponse;
+
+
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
