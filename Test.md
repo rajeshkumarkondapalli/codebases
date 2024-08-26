@@ -1,4 +1,18 @@
 test
+
+RestTemplate restTemplate = new RestTemplate();
+HttpHeaders headers = new HttpHeaders();
+headers.setContentType(MediaType.APPLICATION_JSON); // Set the content type to JSON
+HttpEntity<String> requestEntity = new HttpEntity<>(jsonString, headers); // jsonString is your JSON data
+
+ResponseEntity<String> response = restTemplate.exchange(
+    "https://api.example.com/endpoint",
+    HttpMethod.POST, 
+    requestEntity,
+    String.class
+); 
+
+
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
