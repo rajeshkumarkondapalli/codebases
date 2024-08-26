@@ -1,37 +1,34 @@
 test
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-import java.util.concurrent.CompletableFuture;
 
-public class AsyncRestTemplateExample {
+public class RestTemplateWithAuth {
 
     public static void main(String[] args) {
         RestTemplate restTemplate = new RestTemplate();
 
-        // Asynchronous calls using CompletableFuture
-        CompletableFuture<ResponseEntity<String>> response1 = CompletableFuture.supplyAsync(() ->
-                restTemplate.getForEntity("https://api.example.com/endpoint1", String.class)
+        // Set up headers for basic authentication
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBasicAuth("username", "password"); // Replace with your actual credentials
+
+        // Create a request entity with headers
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        // Make the GET request with authentication
+        ResponseEntity<String> response = restTemplate.exchange(
+                "https://api.example.com/secured-endpoint", 
+                HttpMethod.GET, 
+                entity,
+                String.class
         );
 
-        CompletableFuture<ResponseEntity<String>> response2 = CompletableFuture.supplyAsync(() ->
-                restTemplate.getForEntity("https://api.example.com/endpoint2", String.class)
-        );
-
-        // Combine results using CompletableFuture.allOf()
-        CompletableFuture<Void> allResponses = CompletableFuture.allOf(response1, response2);
-
-        // Handle results after all calls complete
-        allResponses.thenRun(() -> {
-            System.out.println("Response 1: " + response1.join().getBody());
-            System.out.println("Response 2: " + response2.join().getBody());
-        });
-
-        // Keep the main thread running to allow asynchronous tasks to complete
-        try {
-            Thread.sleep(1000); // Wait for a bit to allow the calls to finish
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        // Print the response body
+        System.out.println(response.getBody());
     }
 }
 
