@@ -17,9 +17,6 @@ HttpMethod httpMethod = getRequestType(command.getRequestType());
 List<String> combinedResponses = new ArrayList<>();
 HttpStatus finalStatus = HttpStatus.OK; // Default to 200 OK
 
-for (String podId : odlPods) {
-    ResponseEntity<String> response = invokeOdlRequest(podId, deviceName, httpMethod);
-
     if (response != null) {
         combinedResponses.add(response.getBody());
 
