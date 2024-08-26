@@ -1,4 +1,41 @@
 test
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+import java.util.concurrent.CompletableFuture;
+
+public class AsyncRestTemplateExample {
+
+    public static void main(String[] args) {
+        RestTemplate restTemplate = new RestTemplate();
+
+        // Asynchronous calls using CompletableFuture
+        CompletableFuture<ResponseEntity<String>> response1 = CompletableFuture.supplyAsync(() ->
+                restTemplate.getForEntity("https://api.example.com/endpoint1", String.class)
+        );
+
+        CompletableFuture<ResponseEntity<String>> response2 = CompletableFuture.supplyAsync(() ->
+                restTemplate.getForEntity("https://api.example.com/endpoint2", String.class)
+        );
+
+        // Combine results using CompletableFuture.allOf()
+        CompletableFuture<Void> allResponses = CompletableFuture.allOf(response1, response2);
+
+        // Handle results after all calls complete
+        allResponses.thenRun(() -> {
+            System.out.println("Response 1: " + response1.join().getBody());
+            System.out.println("Response 2: " + response2.join().getBody());
+        });
+
+        // Keep the main thread running to allow asynchronous tasks to complete
+        try {
+            Thread.sleep(1000); // Wait for a bit to allow the calls to finish
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+
 To handle multiple API responses using Java's RestTemplate, you can use CompletableFuture for asynchronous processing. This allows you to make multiple API calls in parallel and handle the responses once all calls are complete.Here's an example of how to use RestTemplate to call multiple APIs and process their responses:Example CodeDependencies: Make sure to include the Spring Web dependency in your pom.xml if you're using Maven:<dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-web</artifactId>
