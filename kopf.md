@@ -1,6 +1,5 @@
-The code snippet kopf.on.event('v1', 'pods', field='status.containerStatuses') is part of the Kopf (Kubernetes Operator Pythonic Framework) library, which is used to write Kubernetes operators in Python.
+kopf.on.event('v1', 'pods', field='status.containerStatuses') is part of the Kopf (Kubernetes Operator Pythonic Framework) library, 
 
-Breakdown of the Code
 kopf.on.event:
 
 This is a decorator provided by Kopf to define an event handler for Kubernetes resources.
