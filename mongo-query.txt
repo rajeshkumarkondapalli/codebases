@@ -26,8 +26,8 @@ db.orders.updateMany(
 )
 
 
-db.yourCollectionName.updateMany(
-  { "connections.connection-status": "UNKNOWN" }, 
-  { $set: { "connections.$[elem].connection-status": "DISCONNECTED" } },
-  { arrayFilters: [ { "elem.connection-status": "UNKNOWN" } ] }
+db.orders.updateMany(
+  { "cons.con-status": "BAD" }, 
+  { $set: { "cons.$[elem].con-status": "GOOD" } },
+  { arrayFilters: [ { "elem.con-status": "BAD" } ] }
 )
