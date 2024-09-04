@@ -1,3 +1,7 @@
+db.system.profile.find().sort({ ts: -1 }).limit(10).pretty();
+
+
+
 db.collection_name.updateOne(
    { filter },
    { $set: { property_to_update: new_value } }
