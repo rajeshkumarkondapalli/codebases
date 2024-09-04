@@ -24,3 +24,10 @@ db.orders.updateMany(
   { "con-status": "BAD" }, 
   { $set: { "con-status": "GOOD" } }
 )
+
+
+db.yourCollectionName.updateMany(
+  { "connections.connection-status": "UNKNOWN" }, 
+  { $set: { "connections.$[elem].connection-status": "DISCONNECTED" } },
+  { arrayFilters: [ { "elem.connection-status": "UNKNOWN" } ] }
+)
