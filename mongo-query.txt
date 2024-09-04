@@ -17,5 +17,10 @@ db.orders.updateMany(
 
 db.orders.updateOne(
   { "name": "name" }, 
-  { $set: { "cons.0.status": "SUPER" } } 
+  { $set: { "cons.0.status": "GOOD" } } 
+)
+
+db.orders.updateMany(
+  { "con-status": "BAD" }, 
+  { $set: { "con-status": "GOOD" } }
 )
