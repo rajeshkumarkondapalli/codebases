@@ -1,0 +1,21 @@
+db.collection_name.updateOne(
+   { filter },
+   { $set: { property_to_update: new_value } }
+)
+
+db.products.updateOne(
+   { _id: 1 },
+   { $set: { price: 20 } }
+)
+
+
+db.orders.updateMany(
+   { status: "pending" },
+   { $set: { status: "processing" } }
+)
+
+
+db.orders.updateOne(
+  { "name": "name" }, 
+  { $set: { "cons.0.status": "SUPER" } } 
+)
