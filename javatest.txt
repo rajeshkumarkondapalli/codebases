@@ -1,36 +1,15 @@
-# import org.junit.jupiter.api.BeforeEach;
-# import org.junit.jupiter.api.Test;
 
-# class MyTests {
-
-#     @BeforeEach
-#     void setUp() {
-#         // This method will be executed before each test method
-#         System.out.println("Setting up test data...");
-#     }
-
-#     @Test
-#     void test1() {
-#         // Test logic here
-#     }
-
-#     @Test
-#     void test2() {
-#         // Test logic here
-#     }
-# }
-
-# --------------------------------------
+# Rajesh Kondapalli - --------------------------------------
 
 import os
 import re
 
-# Define a function to extract method signatures from a Java file
+# Rajesh Kondapalli - Define a function to extract method signatures from a Java file
 def extract_methods_from_java(java_code):
-    # Regex to match Java method signatures (public/protected/private returnType methodName(args))
+    # Rajesh Kondapalli - Regex to match Java method signatures (public/protected/private returnType methodName(args))
     method_pattern = r'(public|protected|private)\s+(\w+)\s+(\w+)\s*\(.*?\)\s*\{'
     
-    # Find all methods in the file
+    # Rajesh Kondapalli - Find all methods in the file
     methods = re.findall(method_pattern, java_code)
     
     method_signatures = []
@@ -44,7 +23,7 @@ def extract_methods_from_java(java_code):
     
     return method_signatures
 
-# Define a function to generate unit test templates
+# Rajesh Kondapalli - Define a function to generate unit test templates
 def generate_unit_test(method_signature, class_name):
     method_name = method_signature['method_name']
     return f"""
@@ -63,33 +42,33 @@ def generate_unit_test(method_signature, class_name):
     }}
     """
 
-# Define a function to scan Java files in the directory and generate unit tests
+# Rajesh Kondapalli - Define a function to scan Java files in the directory and generate unit tests
 def generate_unit_tests_for_folder(base_folder):
     for root, dirs, files in os.walk(base_folder):
         for file in files:
             if file.endswith(".java"):
                 file_path = os.path.join(root, file)
                 
-                # Open the Java file and extract method signatures
+                # Rajesh Kondapalli - Open the Java file and extract method signatures
                 with open(file_path, 'r', encoding='utf-8') as java_file:
                     java_code = java_file.read()
                 
-                # Get the class name from the file name
+                # Rajesh Kondapalli - Get the class name from the file name
                 class_name = file.replace(".java", "")
                 
-                # Extract methods from the Java code
+                # Rajesh Kondapalli - Extract methods from the Java code
                 method_signatures = extract_methods_from_java(java_code)
                 
-                # Skip files without methods
+                # Rajesh Kondapalli - Skip files without methods
                 if not method_signatures:
                     continue
                 
-                # Generate test methods for each method signature
+                # Rajesh Kondapalli - Generate test methods for each method signature
                 test_methods = ""
                 for method_signature in method_signatures:
                     test_methods += generate_unit_test(method_signature, class_name)
                 
-                # Create a test file with the generated test methods
+                # Rajesh Kondapalli - Create a test file with the generated test methods
                 test_class_name = f"{class_name}Test"
                 test_file_content = f"""
                 import org.junit.jupiter.api.Test;
@@ -102,34 +81,34 @@ def generate_unit_tests_for_folder(base_folder):
                 }}
                 """
                 
-                # Write the generated test to a new file in the same directory as the source file
+                # Rajesh Kondapalli - Write the generated test to a new file in the same directory as the source file
                 test_file_path = os.path.join(root, f"{test_class_name}.java")
                 with open(test_file_path, 'w', encoding='utf-8') as test_file:
                     test_file.write(test_file_content)
                 
                 print(f"Generated test for {file_path} -> {test_file_path}")
 
-# Example usage:
+# Rajesh Kondapalli - Example usage:
 base_folder = '/path/to/your/springboot/project/src/main/java'
 generate_unit_tests_for_folder(base_folder)
 
-# ------------------------------------
+# Rajesh Kondapalli - ------------------------------------
 
 import os
 import re
 
-# Define a function to extract method signatures from a Java file
+# Rajesh Kondapalli - Define a function to extract method signatures from a Java file
 def extract_methods_from_java(java_code):
-    # Regex to match Java method signatures (public/protected/private returnType methodName(args))
+    # Rajesh Kondapalli - Regex to match Java method signatures (public/protected/private returnType methodName(args))
     method_pattern = r'(public|protected|private)\s+(\w+)\s+(\w+)\s*\((.*?)\)\s*\{'
     
-    # Find all methods in the file
+    # Rajesh Kondapalli - Find all methods in the file
     methods = re.findall(method_pattern, java_code)
     
     method_signatures = []
     for method in methods:
         access_modifier, return_type, method_name, params = method
-        param_list = [param.strip() for param in params.split(",") if param]  # Split parameters by comma
+        param_list = [param.strip() for param in params.split(",") if param]  # Rajesh Kondapalli - Split parameters by comma
         method_signatures.append({
             "access_modifier": access_modifier,
             "return_type": return_type,
@@ -139,7 +118,7 @@ def extract_methods_from_java(java_code):
     
     return method_signatures
 
-# Define a function to generate test input values based on parameter types
+# Rajesh Kumar Kondapalli - Define a function to generate test input values based on parameter types
 def generate_test_input(param_type):
     if "String" in param_type:
         return '"testValue"'
@@ -152,9 +131,9 @@ def generate_test_input(param_type):
     elif "List" in param_type:
         return 'new ArrayList<>()'
     else:
-        return 'null'  # Default fallback, handle custom objects as needed
+        return 'null'  # Rajesh Kondapalli - Default fallback, handle custom objects as needed
 
-# Define a function to generate assertions based on the return type
+# Rajesh Kondapalli - Define a function to generate assertions based on the return type
 def generate_assertion(return_type):
     if return_type == "void":
         return "// No return value, test for expected side effects"
@@ -165,19 +144,19 @@ def generate_assertion(return_type):
     elif "List" in return_type:
         return 'assertNotNull(result); assertTrue(result.isEmpty());'
     else:
-        return 'assertNotNull(result);'  # Fallback for custom objects
+        return 'assertNotNull(result);'  # Rajesh Kondapalli - Fallback for custom objects
 
-# Define a function to generate test cases for each method signature
+# Rajesh Kondapalli - Define a function to generate test cases for each method signature
 def generate_unit_test(method_signature, class_name):
     method_name = method_signature['method_name']
     return_type = method_signature['return_type']
     params = method_signature['params']
     
-    # Generate input values for each parameter
+    # Rajesh Kondapalli - Generate input values for each parameter
     param_values = [generate_test_input(param) for param in params]
     param_string = ", ".join(param_values) if param_values else ""
     
-    # Generate assertion based on return type
+    # Rajesh Kondapalli - Generate assertion based on return type
     assertion = generate_assertion(return_type)
     
     return f"""
@@ -208,33 +187,33 @@ def generate_unit_test(method_signature, class_name):
     }}
     """
 
-# Define a function to scan Java files in the directory and generate unit tests
+# Rajesh Kondapalli - Define a function to scan Java files in the directory and generate unit tests
 def generate_unit_tests_for_folder(base_folder):
     for root, dirs, files in os.walk(base_folder):
         for file in files:
             if file.endswith(".java"):
                 file_path = os.path.join(root, file)
                 
-                # Open the Java file and extract method signatures
+                # Rajesh Kondapalli - Open the Java file and extract method signatures
                 with open(file_path, 'r', encoding='utf-8') as java_file:
                     java_code = java_file.read()
                 
-                # Get the class name from the file name
+                # Rajesh Kondapalli - Get the class name from the file name
                 class_name = file.replace(".java", "")
                 
-                # Extract methods from the Java code
+                # Rajesh Kondapalli - Extract methods from the Java code
                 method_signatures = extract_methods_from_java(java_code)
                 
-                # Skip files without methods
+                # Rajesh Kondapalli - Skip files without methods
                 if not method_signatures:
                     continue
                 
-                # Generate test methods for each method signature
+                # Rajesh Kondapalli - Generate test methods for each method signature
                 test_methods = ""
                 for method_signature in method_signatures:
                     test_methods += generate_unit_test(method_signature, class_name)
                 
-                # Create a test file with the generated test methods
+                # Rajesh Kondapalli - Create a test file with the generated test methods
                 test_class_name = f"{class_name}Test"
                 test_file_content = f"""
                 import org.junit.jupiter.api.Test;
@@ -247,34 +226,34 @@ def generate_unit_tests_for_folder(base_folder):
                 }}
                 """
                 
-                # Write the generated test to a new file in the same directory as the source file
+                # Rajesh Kondapalli - Write the generated test to a new file in the same directory as the source file
                 test_file_path = os.path.join(root, f"{test_class_name}.java")
                 with open(test_file_path, 'w', encoding='utf-8') as test_file:
                     test_file.write(test_file_content)
                 
                 print(f"Generated test for {file_path} -> {test_file_path}")
 
-# Example usage:
+# Rajesh Kondapalli - Example usage:
 base_folder = '/path/to/your/springboot/project/src/main/java'
 generate_unit_tests_for_folder(base_folder)
 
 
-# ----------------------------------
+# Rajesh Kondapalli - ----------------------------------
 import os
 import re
 
-# Define a function to extract method signatures from a Java file
+# Rajesh Kondapalli - Define a function to extract method signatures from a Java file
 def extract_methods_from_java(java_code):
-    # Regex to match Java method signatures (public/protected/private returnType methodName(args))
+    # Rajesh Kondapalli - Regex to match Java method signatures (public/protected/private returnType methodName(args))
     method_pattern = r'(public|protected|private)\s+(\w+)\s+(\w+)\s*\((.*?)\)\s*\{'
     
-    # Find all methods in the file
+    # Rajesh Kondapalli - Find all methods in the file
     methods = re.findall(method_pattern, java_code)
     
     method_signatures = []
     for method in methods:
         access_modifier, return_type, method_name, params = method
-        param_list = [param.strip() for param in params.split(",") if param]  # Split parameters by comma
+        param_list = [param.strip() for param in params.split(",") if param]  # Rajesh Kondapalli - Split parameters by comma
         method_signatures.append({
             "access_modifier": access_modifier,
             "return_type": return_type,
@@ -284,7 +263,7 @@ def extract_methods_from_java(java_code):
     
     return method_signatures
 
-# Define a function to generate test input values based on parameter types
+# Rajesh Kondapalli - Define a function to generate test input values based on parameter types
 def generate_test_input(param_type):
     if "String" in param_type:
         return '"testValue"'
@@ -297,9 +276,9 @@ def generate_test_input(param_type):
     elif "List" in param_type:
         return 'new ArrayList<>()'
     else:
-        return 'null'  # Default fallback, handle custom objects as needed
+        return 'null'  # Rajesh Kondapalli - Default fallback, handle custom objects as needed
 
-# Define a function to generate assertions based on the return type
+# Rajesh Kondapalli - Define a function to generate assertions based on the return type
 def generate_assertion(return_type):
     if return_type == "void":
         return "// No return value, test for expected side effects"
@@ -310,19 +289,19 @@ def generate_assertion(return_type):
     elif "List" in return_type:
         return 'assertNotNull(result); assertTrue(result.isEmpty());'
     else:
-        return 'assertNotNull(result);'  # Fallback for custom objects
+        return 'assertNotNull(result);'  # Rajesh Kondapalli - Fallback for custom objects
 
-# Define a function to generate test cases for each method signature, with Spring dependency injection
+# Rajesh Kondapalli - Define a function to generate test cases for each method signature, with Spring dependency injection
 def generate_unit_test(method_signature, class_name):
     method_name = method_signature['method_name']
     return_type = method_signature['return_type']
     params = method_signature['params']
     
-    # Generate input values for each parameter
+    # Rajesh Kondapalli - Generate input values for each parameter
     param_values = [generate_test_input(param) for param in params]
     param_string = ", ".join(param_values) if param_values else ""
     
-    # Generate assertion based on return type
+    # Rajesh Kondapalli - Generate assertion based on return type
     assertion = generate_assertion(return_type)
     
     return f"""
@@ -346,34 +325,34 @@ def generate_unit_test(method_signature, class_name):
     }}
     """
 
-# Define a function to scan Java files in the directory and generate unit tests with Spring dependencies setup
+# Rajesh Kondapalli - Define a function to scan Java files in the directory and generate unit tests with Spring dependencies setup
 def generate_unit_tests_for_folder(base_folder):
     for root, dirs, files in os.walk(base_folder):
         for file in files:
             if file.endswith(".java"):
                 file_path = os.path.join(root, file)
                 
-                # Open the Java file and extract method signatures
+                # Rajesh Kondapalli - Open the Java file and extract method signatures
                 with open(file_path, 'r', encoding='utf-8') as java_file:
                     java_code = java_file.read()
                 
-                # Get the class name from the file name
+                # Rajesh Kondapalli - Get the class name from the file name
                 class_name = file.replace(".java", "")
-                class_name_lower = class_name[0].lower() + class_name[1:]  # Convert to camelCase
+                class_name_lower = class_name[0].lower() + class_name[1:]  # Rajesh Kondapalli - Convert to camelCase
                 
-                # Extract methods from the Java code
+                # Rajesh Kondapalli - Extract methods from the Java code
                 method_signatures = extract_methods_from_java(java_code)
                 
-                # Skip files without methods
+                # Rajesh Kondapalli - Skip files without methods
                 if not method_signatures:
                     continue
                 
-                # Generate test methods for each method signature
+                # Rajesh Kondapalli - Generate test methods for each method signature
                 test_methods = ""
                 for method_signature in method_signatures:
                     test_methods += generate_unit_test(method_signature, class_name)
                 
-                # Create a test file with the generated test methods, including Spring dependencies setup
+                # Rajesh Kondapalli - Create a test file with the generated test methods, including Spring dependencies setup
                 test_class_name = f"{class_name}Test"
                 test_file_content = f"""
                 import org.junit.jupiter.api.BeforeEach;
@@ -401,13 +380,13 @@ def generate_unit_tests_for_folder(base_folder):
                 }}
                 """
                 
-                # Write the generated test to a new file in the same directory as the source file
+                # Rajesh Kondapalli - Write the generated test to a new file in the same directory as the source file
                 test_file_path = os.path.join(root, f"{test_class_name}.java")
                 with open(test_file_path, 'w', encoding='utf-8') as test_file:
                     test_file.write(test_file_content)
                 
                 print(f"Generated test for {file_path} -> {test_file_path}")
 
-# Example usage:
+# Rajesh Kondapalli - Example usage:
 base_folder = '/path/to/your/springboot/project/src/main/java'
 generate_unit_tests_for_folder(base_folder)
