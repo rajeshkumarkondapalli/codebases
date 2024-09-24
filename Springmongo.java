@@ -30,7 +30,11 @@ update.set("connections.$[elem].connection-status", deviceConnectionStatus);
 
 // Add the array filter to target the right element in the 'connections' array
 UpdateOptions options = new UpdateOptions().arrayFilters(List.of(Criteria.where("elem.role").is("CONFIG")));
+mongoTemplate.updateFirst(query, update, options, DeviceInventory.class);
 
+
+
+UpdateOptions options = new UpdateOptions().upsert(true);
 mongoTemplate.updateFirst(query, update, options, DeviceInventory.class);
 
 }
