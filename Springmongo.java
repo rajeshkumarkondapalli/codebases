@@ -6,20 +6,6 @@ import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 
-// {
-//   "device": {
-//     "name": "sonoo",
-//     "vendor": "test",
-//     "model": "123",
-//     "connections": [
-//       {
-//         "name": "con1",
-//         "status": "connected"
-//       }
-//     ]
-//   }
-// }
-
 
 
 @Service
@@ -37,4 +23,14 @@ public class Springmongo {
 
         mongoTemplate.updateFirst(query, update, "devices");
     }
+
+    Query query = new Query(Criteria.where("name").is(deviceName));
+Update update = new Update();
+update.set("connections.$[elem].connection-status", deviceConnectionStatus);
+
+// Add the array filter to target the right element in the 'connections' array
+UpdateOptions options = new UpdateOptions().arrayFilters(List.of(Criteria.where("elem.role").is("CONFIG")));
+
+mongoTemplate.updateFirst(query, update, options, DeviceInventory.class);
+
 }
