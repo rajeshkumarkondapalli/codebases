@@ -48,3 +48,61 @@ EXPOSE 8080
 
 # Define the entry point for the container
 CMD ["python3.12", "app.py"]
+
+
+
+
+
+
+
+# Use Red Hat UBI 8 as the base image
+FROM registry.access.redhat.com/ubi8/ubi
+
+# Set environment variables
+ENV LANG=en_US.UTF-8
+ENV PYTHON_VERSION=3.12.0
+
+# Install development tools and dependencies
+RUN yum -y update && \
+    yum -y groupinstall "Development Tools" && \
+    yum -y install \
+    wget \
+    bzip2 \
+    libffi-devel \
+    zlib-devel \
+    openssl-devel \
+    curl && \
+    yum clean all
+
+# Download and install Python 3.12
+RUN cd /usr/src && \
+    wget https://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz && \
+    tar xzf Python-${PYTHON_VERSION}.tgz && \
+    cd Python-${PYTHON_VERSION} && \
+    ./configure --enable-optimizations && \
+    make altinstall && \
+    rm -f /usr/src/Python-${PYTHON_VERSION}.tgz
+
+# Verify Python installation
+RUN python3.12 --version
+
+# Install pip for Python 3.12
+RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
+    python3.12 get-pip.py && \
+    rm get-pip.py
+
+# Install required Python packages
+COPY requirements.txt .
+RUN python3.12 -m pip install -r requirements.txt
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the local app code to the container
+COPY . /app
+
+# Expose port 8080 if you're running a service
+EXPOSE 8080
+
+# Define the entry point for the container
+CMD ["python3.12", "app.py"]
