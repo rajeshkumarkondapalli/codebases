@@ -1,0 +1,28 @@
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+public class ResponseEntityConverter {
+
+    public static void convertToServletResponse(ResponseEntity<?> responseEntity, HttpServletResponse servletResponse) throws IOException {
+        // Set status code
+        servletResponse.setStatus(responseEntity.getStatusCodeValue());
+
+        // Set headers
+        HttpHeaders headers = responseEntity.getHeaders();
+        headers.forEach((key, valueList) -> {
+            for (String value : valueList) {
+                servletResponse.addHeader(key, value);
+            }
+        });
+
+        // Set body (if present)
+        Object body = responseEntity.getBody();
+        if (body != null) {
+            servletResponse.setContentType("application/json"); // adjust content type as necessary
+            servletResponse.getWriter().write(body.toString());  // ensure correct serialization of the object
+        }
+    }
+}
