@@ -210,3 +210,75 @@ This enhanced script can handle various types of XML data, making the generated 
 
 
 
+
+
+
+import xml.etree.ElementTree as ET
+import json
+
+def netconf_xml_to_restconf(xml_str, yang_model):
+  """
+  Converts a NETCONF XML string to a RESTCONF request.
+
+  Args:
+      xml_str: The NETCONF XML configuration as a string.
+      yang_model: The name of the YANG model (e.g., "ietf-interfaces").
+
+  Returns:
+      A dictionary containing the RESTCONF request information:
+          - method: HTTP method (GET, PUT, POST, PATCH, DELETE)
+          - url: The RESTCONF URL
+          - data: The request body data (if applicable)
+  """
+
+  # 1. Parse the XML
+  root = ET.fromstring(xml_str)
+
+  # 2. Extract namespace (if present)
+  namespace = root.tag.split('}')[0][1:] if '}' in root.tag else None
+
+  # 3. Build the URL path
+  url_path = f"/restconf/data/{yang_model}:{root.tag.split('}')[-1]}"
+  for elem in root.iter():
+    if elem != root:
+      url_path += f"/{elem.tag.split('}')[-1]}"
+      if elem.attrib:  # Handle attributes as keys
+        url_path += f"={elem.attrib.get('name', '')}"  # Assuming 'name' is a common key
+
+  # 4. Determine HTTP method (simplified logic - needs refinement)
+  if len(root) == 0:  # If no child elements, assume GET
+    method = "GET"
+    data = None
+  else:
+    method = "PUT"  # Assume PUT for updates 
+    data = {}
+    for child in root:
+      data[child.tag.split('}')[-1]] = child.text or True  # Handle boolean values
+
+  # 5. Construct the result
+  restconf_request = {
+      "method": method,
+      "url": url_path,
+      "data": data
+  }
+
+  return restconf_request
+
+
+# Example usage
+xml_config = """
+<interfaces xmlns="urn:ietf:params:xml:ns:yang:ietf-interfaces">
+  <interface>
+    <name>eth0</name>
+    <enabled>true</enabled>
+  </interface>
+</interfaces>
+"""
+
+yang_model = "ietf-interfaces"
+
+restconf_req = netconf_xml_to_restconf(xml_config, yang_model)
+print(json.dumps(restconf_req, indent=2)) 
+
+
+
