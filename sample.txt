@@ -1,0 +1,227 @@
+import re
+
+def escape_special_characters_in_string(match):
+    """Escape `${` sequences and special characters in Groovy strings for FreeMarker."""
+    content = match.group(0)
+    # Escape `${` by replacing it with `\${`
+    content = content.replace('${', r'\${')
+    # Add other special FreeMarker-specific escapes if needed
+    content = content.replace('#', r'\#')
+    return content
+
+def convert_groovy_to_ftl(groovy_code):
+    # Escape special characters in strings
+    ftl_code = re.sub(r'"[^"]*"', escape_special_characters_in_string, groovy_code)
+
+    # Convert variable assignments
+    ftl_code = re.sub(r'(\w+)\s*=\s*(.+)', r'<#assign \1 = \2>', ftl_code)
+
+    # Convert print statements
+    ftl_code = re.sub(r'println\s+"(.+)"', r'${"\1"}', ftl_code)
+
+    # Convert logical operators in conditions
+    ftl_code = re.sub(r'\s+&&\s+', ' && ', ftl_code)
+    ftl_code = re.sub(r'\s+\|\|\s+', ' || ', ftl_code)
+
+    # Convert if conditions
+    ftl_code = re.sub(r'if\s*\((.+?)\)\s*{', r'<#if \1>', ftl_code)
+    ftl_code = re.sub(r'}\s*else\s*{', r'<#else>', ftl_code)
+    ftl_code = re.sub(r'}\s*else if\s*\((.+?)\)\s*{', r'<#elseif \1>', ftl_code)
+    ftl_code = re.sub(r'}', r'</#if>', ftl_code)
+
+    # Handle for loops
+    ftl_code = re.sub(r'for\s*\((\w+)\s+in\s+(.+?)\)\s*{', r'<#list \2 as \1>', ftl_code)
+    ftl_code = re.sub(r'}', r'</#list>', ftl_code)
+
+    # Handle while loops
+    while_pattern = re.compile(r'while\s*\((.+?)\)\s*{(.+?)}', re.DOTALL)
+    def convert_while(match):
+        condition = match.group(1).strip()
+        loop_content = match.group(2).strip()
+        return f"<#list 1..<#if {condition}>9999<#else>0</#if> as i>\n{loop_content}\n</#list>"
+    ftl_code = while_pattern.sub(convert_while, ftl_code)
+
+    # Handle switch-case statements
+    switch_pattern = re.compile(r'switch\s*\((.+?)\)\s*\{(.+?)\}', re.DOTALL)
+    def convert_switch(match):
+        switch_var = match.group(1).strip()
+        cases_block = match.group(2)
+        case_pattern = re.compile(r'case\s+(.+?):(.+?)(?=case|default|$)', re.DOTALL)
+        case_statements = case_pattern.findall(cases_block)
+        ftl_switch_code = ""
+        first_case = True
+        for case_value, case_code in case_statements:
+            condition = f"{switch_var} == {case_value.strip()}"
+            if first_case:
+                ftl_switch_code += f"<#if {condition}>\n{case_code.strip()}\n"
+                first_case = False
+            else:
+                ftl_switch_code += f"<#elseif {condition}>\n{case_code.strip()}\n"
+        default_match = re.search(r'default:\s*(.+)', cases_block, re.DOTALL)
+        if default_match:
+            default_code = default_match.group(1).strip()
+            ftl_switch_code += f"<#else>\n{default_code}\n"
+        ftl_switch_code += "</#if>"
+        return ftl_switch_code
+    ftl_code = switch_pattern.sub(convert_switch, ftl_code)
+
+    # Convert equalsIgnoreCase method
+    ftl_code = re.sub(r'(\w+)\.equalsIgnoreCase\((.+?)\)', r'\1?lower_case == \2?lower_case', ftl_code)
+
+    # Handle array, list, and map enumeration
+    map_enum_pattern = re.compile(r'(\w+)\.each\s*\{\s*(\w+),\s*(\w+)\s*->\s*(.+?)\s*\}', re.DOTALL)
+    def convert_map_enum(match):
+        map_name = match.group(1)
+        key_var = match.group(2)
+        value_var = match.group(3)
+        loop_body = match.group(4).strip()
+        return f"<#list {map_name}?keys as {key_var}>\n<#assign {value_var} = {map_name}[{key_var}]>\n{loop_body}\n</#list>"
+    ftl_code = map_enum_pattern.sub(convert_map_enum, ftl_code)
+
+    # Handle Map and List declarations
+    map_pattern = re.compile(r'\[([^]]+)\]')
+    def convert_map(match):
+        map_content = match.group(1)
+        items = [item.split(":") for item in map_content.split(",")]
+        map_items = ", ".join(f'"{k.strip()}": {v.strip()}' for k, v in items)
+        return f'{{ {map_items} }}'
+    ftl_code = map_pattern.sub(convert_map, ftl_code)
+
+    list_pattern = re.compile(r'(\w+)\s*=\s*\[(.+?)\]')
+    ftl_code = list_pattern.sub(r'<#assign \1 = [\2]>', ftl_code)
+
+    return ftl_code
+
+# Sample Groovy code with special characters like ${} and #
+groovy_code = """
+def greeting = "Hello, ${name}!"
+def sentence = "Your score is ${score}#."
+println greeting
+"""
+
+# Convert to FTL
+ftl_code = convert_groovy_to_ftl(groovy_code)
+print(ftl_code)
+
+#---------------------------------------------
+import re
+
+def convert_groovy_to_ftl(groovy_code):
+    # Convert variable assignments
+    ftl_code = re.sub(r'(\w+)\s*=\s*(.+)', r'<#assign \1 = \2>', groovy_code)
+
+    # Convert print statements (e.g., println "text")
+    ftl_code = re.sub(r'println\s+"(.+)"', r'${"\1"}', ftl_code)
+
+    # Convert logical operators in conditions (&& and ||)
+    ftl_code = re.sub(r'\s+&&\s+', ' && ', ftl_code)
+    ftl_code = re.sub(r'\s+\|\|\s+', ' || ', ftl_code)
+
+    # Convert if conditions
+    ftl_code = re.sub(r'if\s*\((.+?)\)\s*{', r'<#if \1>', ftl_code)
+    ftl_code = re.sub(r'}\s*else\s*{', r'<#else>', ftl_code)
+    ftl_code = re.sub(r'}\s*else if\s*\((.+?)\)\s*{', r'<#elseif \1>', ftl_code)
+    ftl_code = re.sub(r'}', r'</#if>', ftl_code)
+
+    # Handle for loops (e.g., for (item in list) { ... })
+    ftl_code = re.sub(r'for\s*\((\w+)\s+in\s+(.+?)\)\s*{', r'<#list \2 as \1>', ftl_code)
+    ftl_code = re.sub(r'}', r'</#list>', ftl_code)
+
+    # Handle while loops by converting to list-based structure
+    while_pattern = re.compile(r'while\s*\((.+?)\)\s*{(.+?)}', re.DOTALL)
+    def convert_while(match):
+        condition = match.group(1).strip()
+        loop_content = match.group(2).strip()
+        return f"<#list 1..<#if {condition}>9999<#else>0</#if> as i>\n{loop_content}\n</#list>"
+    ftl_code = while_pattern.sub(convert_while, ftl_code)
+
+    # Handle switch-case statements
+    switch_pattern = re.compile(r'switch\s*\((.+?)\)\s*\{(.+?)\}', re.DOTALL)
+    def convert_switch(match):
+        switch_var = match.group(1).strip()
+        cases_block = match.group(2)
+        case_pattern = re.compile(r'case\s+(.+?):(.+?)(?=case|default|$)', re.DOTALL)
+        case_statements = case_pattern.findall(cases_block)
+        ftl_switch_code = ""
+        first_case = True
+        for case_value, case_code in case_statements:
+            condition = f"{switch_var} == {case_value.strip()}"
+            if first_case:
+                ftl_switch_code += f"<#if {condition}>\n{case_code.strip()}\n"
+                first_case = False
+            else:
+                ftl_switch_code += f"<#elseif {condition}>\n{case_code.strip()}\n"
+        default_match = re.search(r'default:\s*(.+)', cases_block, re.DOTALL)
+        if default_match:
+            default_code = default_match.group(1).strip()
+            ftl_switch_code += f"<#else>\n{default_code}\n"
+        ftl_switch_code += "</#if>"
+        return ftl_switch_code
+    ftl_code = switch_pattern.sub(convert_switch, ftl_code)
+
+    # Convert equalsIgnoreCase method to case-insensitive comparison
+    ftl_code = re.sub(r'(\w+)\.equalsIgnoreCase\((.+?)\)', r'\1?lower_case == \2?lower_case', ftl_code)
+
+    # Handle string concatenation with + operator
+    # (FreeMarker supports the `+` operator for concatenation, so this works directly)
+    ftl_code = re.sub(r'"([^"]+)"\s*\+\s*"([^"]+)"', r'"\1\2"', ftl_code)
+
+    # Handle array/list/map enumeration in FreeMarker
+    # Convert array/list/map enumeration (e.g., map.each { key, value -> ... })
+    map_enum_pattern = re.compile(r'(\w+)\.each\s*\{\s*(\w+),\s*(\w+)\s*->\s*(.+?)\s*\}', re.DOTALL)
+    def convert_map_enum(match):
+        map_name = match.group(1)
+        key_var = match.group(2)
+        value_var = match.group(3)
+        loop_body = match.group(4).strip()
+        return f"<#list {map_name}?keys as {key_var}>\n<#assign {value_var} = {map_name}[{key_var}]>\n{loop_body}\n</#list>"
+    ftl_code = map_enum_pattern.sub(convert_map_enum, ftl_code)
+
+    # Convert Map declaration (e.g., map = ["key": "value", "key2": "value2"])
+    map_pattern = re.compile(r'\[([^]]+)\]')
+    def convert_map(match):
+        map_content = match.group(1)
+        items = [item.split(":") for item in map_content.split(",")]
+        map_items = ", ".join(f'"{k.strip()}": {v.strip()}' for k, v in items)
+        return f'{{ {map_items} }}'
+    ftl_code = map_pattern.sub(convert_map, ftl_code)
+
+    # Convert List declaration (e.g., list = [1, 2, 3])
+    list_pattern = re.compile(r'(\w+)\s*=\s*\[(.+?)\]')
+    ftl_code = list_pattern.sub(r'<#assign \1 = [\2]>', ftl_code)
+
+    # Convert Set declaration (e.g., set = ["item1", "item2"])
+    set_pattern = re.compile(r'set\s*=\s*\[(.+?)\]')
+    ftl_code = set_pattern.sub(r'<#assign set = [\1]>', ftl_code)
+
+    return ftl_code
+
+# Sample Groovy code with string concatenations, equalsIgnoreCase, array, and map enumeration
+groovy_code = """
+def name = "Alice"
+def age = 30
+def greeting = "Hello, " + name + "!"
+def colors = ["red", "green", "blue"]
+def user = ["name": "Alice", "age": age]
+
+println greeting
+
+if (name.equalsIgnoreCase("ALICE")) {
+    println "Name matches."
+} else {
+    println "Name does not match."
+}
+
+for (color in colors) {
+    println "Color: " + color
+}
+
+user.each { key, value ->
+    println key + ": " + value
+}
+"""
+
+# Convert to FTL
+ftl_code = convert_groovy_to_ftl(groovy_code)
+print(ftl_code)
+
