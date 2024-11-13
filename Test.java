@@ -52,18 +52,13 @@ def convert_groovy_to_ftl(groovy_code):
         case_statements = case_pattern.findall(cases_block)
         ftl_switch_code = ""
         first_case = True
-        for case in case_statements:
-            if len(case) == 2:
-                case_value, case_code = case
-                condition = f"{switch_var} == {case_value.strip()}"
-                if first_case:
-                    ftl_switch_code += f"<#if {condition}>\n{case_code.strip()}\n"
-                    first_case = False
-                else:
-                    ftl_switch_code += f"<#elseif {condition}>\n{case_code.strip()}\n"
+        for case_value, case_code in case_statements:
+            condition = f"{switch_var} == {case_value.strip()}"
+            if first_case:
+                ftl_switch_code += f"<#if {condition}>\n{case_code.strip()}\n"
+                first_case = False
             else:
-                print(f"Warning: Skipping invalid case entry '{case}'")
-
+                ftl_switch_code += f"<#elseif {condition}>\n{case_code.strip()}\n"
         default_match = re.search(r'default:\s*(.+)', cases_block, re.DOTALL)
         if default_match:
             default_code = default_match.group(1).strip()
@@ -85,22 +80,19 @@ def convert_groovy_to_ftl(groovy_code):
         return f"<#list {map_name}?keys as {key_var}>\n<#assign {value_var} = {map_name}[{key_var}]>\n{loop_body}\n</#list>"
     ftl_code = map_enum_pattern.sub(convert_map_enum, ftl_code)
 
-    # Handle Map declarations with error handling for invalid entries
+    # Handle Map and List declarations with error handling for unpack issues
     map_pattern = re.compile(r'\[([^]]+)\]')
     def convert_map(match):
         map_content = match.group(1)
-        items = [item.split(":") for item in map_content.split(",")]
-        map_items = []
-
-        for item in items:
-            if len(item) == 2:  # Ensure there are exactly two parts to unpack
-                k, v = item
-                map_items.append(f'"{k.strip()}": {v.strip()}')
+        items = []
+        for item in map_content.split(","):
+            parts = item.split(":")
+            if len(parts) == 2:
+                k, v = parts
+                items.append(f'"{k.strip()}": {v.strip()}')
             else:
-                # Handle unexpected format gracefully, maybe log or skip
-                print(f"Warning: Skipping invalid map entry '{item}'")
-        
-        return f'{{ {", ".join(map_items)} }}'
+                print(f"Warning: Skipping invalid map entry '{item.strip()}'")
+        return f'{{ {", ".join(items)} }}'
     ftl_code = map_pattern.sub(convert_map, ftl_code)
 
     list_pattern = re.compile(r'(\w+)\s*=\s*\[(.+?)\]')
@@ -128,12 +120,12 @@ def process_files(groovy_files):
         # Convert the content to FTL
         ftl_content = convert_groovy_to_ftl(groovy_content)
        
-        # Save the converted content into a new .ftl file
+        # Save the converted content into a new .ftl file, overwriting if it exists
         ftl_file = groovy_file.replace('.groovy', '.ftl')
         with open(ftl_file, 'w', encoding='utf-8') as f:
             f.write(ftl_content)
        
-        print(f"Created FTL file: {ftl_file}")
+        print(f"Created or updated FTL file: {ftl_file}")
 
 def main():
     # Get the folder path from the user
@@ -151,7 +143,7 @@ def main():
         print(f"No .groovy files found in {folder_path}")
         return
    
-    # Process each file and generate FTL files
+    # Process each file and generate or overwrite FTL files
     process_files(groovy_files)
 
 # Run the script
