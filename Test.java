@@ -1,4 +1,3 @@
-
 import os
 import re
 
@@ -7,7 +6,6 @@ def escape_special_characters_in_string(match):
     content = match.group(0)
     content = content.replace('${', r'\${')  # Escape ${}
     content = content.replace('#', r'\#')     # Escape #
-    content = content.replace('"', r'\"')     # Escape "
     return content
 
 # Convert Groovy code to FTL code
@@ -17,8 +15,8 @@ def convert_groovy_to_ftl(groovy_code):
     # Escape special characters in strings
     ftl_code = re.sub(r'"[^"]*"', escape_special_characters_in_string, ftl_code)
 
-    # Convert variable assignments (ignores lines starting with `def`)
-    ftl_code = re.sub(r'(?<!def\s)(\w+)\s*=\s*(.+)', r'<#assign \1 = \2>', ftl_code)
+    # Convert variable assignments
+    ftl_code = re.sub(r'(\w+)\s*=\s*(.+)', r'<#assign \1 = \2>', ftl_code)
 
     # Convert println statements
     ftl_code = re.sub(r'println\s+"(.+)"', r'${"\1"}', ftl_code)
@@ -37,7 +35,7 @@ def convert_groovy_to_ftl(groovy_code):
     ftl_code = re.sub(r'for\s*\((\w+)\s+in\s+(.+?)\)\s*{', r'<#list \2 as \1>', ftl_code)
     ftl_code = re.sub(r'}', r'</#list>', ftl_code)
 
-    # Handle while loops with emulation
+    # Handle while loops
     while_pattern = re.compile(r'while\s*\((.+?)\)\s*{(.+?)}', re.DOTALL)
     def convert_while(match):
         condition = match.group(1).strip()
@@ -54,13 +52,18 @@ def convert_groovy_to_ftl(groovy_code):
         case_statements = case_pattern.findall(cases_block)
         ftl_switch_code = ""
         first_case = True
-        for case_value, case_code in case_statements:
-            condition = f"{switch_var} == {case_value.strip()}"
-            if first_case:
-                ftl_switch_code += f"<#if {condition}>\n{case_code.strip()}\n"
-                first_case = False
+        for case in case_statements:
+            if len(case) == 2:
+                case_value, case_code = case
+                condition = f"{switch_var} == {case_value.strip()}"
+                if first_case:
+                    ftl_switch_code += f"<#if {condition}>\n{case_code.strip()}\n"
+                    first_case = False
+                else:
+                    ftl_switch_code += f"<#elseif {condition}>\n{case_code.strip()}\n"
             else:
-                ftl_switch_code += f"<#elseif {condition}>\n{case_code.strip()}\n"
+                print(f"Warning: Skipping invalid case entry '{case}'")
+
         default_match = re.search(r'default:\s*(.+)', cases_block, re.DOTALL)
         if default_match:
             default_code = default_match.group(1).strip()
@@ -82,13 +85,22 @@ def convert_groovy_to_ftl(groovy_code):
         return f"<#list {map_name}?keys as {key_var}>\n<#assign {value_var} = {map_name}[{key_var}]>\n{loop_body}\n</#list>"
     ftl_code = map_enum_pattern.sub(convert_map_enum, ftl_code)
 
-    # Handle Map and List declarations
+    # Handle Map declarations with error handling for invalid entries
     map_pattern = re.compile(r'\[([^]]+)\]')
     def convert_map(match):
         map_content = match.group(1)
         items = [item.split(":") for item in map_content.split(",")]
-        map_items = ", ".join(f'"{k.strip()}": {v.strip()}' for k, v in items)
-        return f'{{ {map_items} }}'
+        map_items = []
+
+        for item in items:
+            if len(item) == 2:  # Ensure there are exactly two parts to unpack
+                k, v = item
+                map_items.append(f'"{k.strip()}": {v.strip()}')
+            else:
+                # Handle unexpected format gracefully, maybe log or skip
+                print(f"Warning: Skipping invalid map entry '{item}'")
+        
+        return f'{{ {", ".join(map_items)} }}'
     ftl_code = map_pattern.sub(convert_map, ftl_code)
 
     list_pattern = re.compile(r'(\w+)\s*=\s*\[(.+?)\]')
@@ -114,11 +126,7 @@ def process_files(groovy_files):
             groovy_content = f.read()
        
         # Convert the content to FTL
-        try:
-            ftl_content = convert_groovy_to_ftl(groovy_content)
-        except Exception as e:
-            print(f"Failed to convert {groovy_file}: {e}")
-            continue
+        ftl_content = convert_groovy_to_ftl(groovy_content)
        
         # Save the converted content into a new .ftl file
         ftl_file = groovy_file.replace('.groovy', '.ftl')
