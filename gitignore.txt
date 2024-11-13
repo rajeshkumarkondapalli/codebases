@@ -1,0 +1,34 @@
+<#-- Initialize vtagsMap -->
+<#assign vtagsMap = {} />
+<#assign vtagsMap["tag"] = "1" />
+
+<#-- Check version and add additional entries -->
+<#if !is_ciena_ncy_device_version_10_9>
+    <#assign vtagsMap["tpid"] = "tpid-${etherType}" />
+</#if>
+
+<#-- Pattern Matching -->
+<#assign singleVlanClassifierPattern = "^(?<vlanId>\\d+)-${inputs['circuit-name']}$" />
+<#assign rangedVlanClassifierPattern = "^(?<vlanId>\\d+)-(?<vlanIdMax>\\d+)-${inputs['circuit-name']}$" />
+
+<#if (cfName?matches(singleVlanClassifierPattern))>
+    <#assign vtagsMap["vlan-id"] = (cfName?groups(singleVlanClassifierPattern, 'vlanId')) />
+<#elseif (cfName?matches(rangedVlanClassifierPattern))>
+    <#assign vtagsMap["vlan-id"] = (cfName?groups(rangedVlanClassifierPattern, 'vlanId')) />
+    <#assign vtagsMap["vlan-id-max"] = (cfName?groups(rangedVlanClassifierPattern, 'vlanIdMax')) />
+<#else>
+    <#-- Error handling -->
+    <#abort "Invalid VLAN Classifier ${cfName} is generated" />
+</#if>
+
+<#-- Create vtags list -->
+<#assign vtags = [vtagsMap] />
+
+<#-- Initialize filterEntryMap -->
+<#assign filterEntryMap = { 
+    "filter-parameter": "vtag-stack", 
+    "vtags": vtags 
+} />
+
+<#-- Return result -->
+${getClassifierMap(filterEntryMap, cfName, index)}
