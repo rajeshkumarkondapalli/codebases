@@ -10,19 +10,21 @@ def generate_sample_value(yang_type: str):
         return f"sample-{random.randint(100, 999)}"
     elif yang_type == "boolean":
         return random.choice(["true", "false"])
-    elif yang_type == "int32" or yang_type == "int64":
+    elif yang_type in {"int32", "int64"}:
         return str(random.randint(-1000, 1000))
-    elif yang_type == "uint32" or yang_type == "uint64":
+    elif yang_type in {"uint32", "uint64"}:
         return str(random.randint(0, 1000))
     elif yang_type == "enumeration":
         return "enum-value"
+    elif yang_type == "inet:ipv4-address":
+        return f"192.168.{random.randint(0, 255)}.{random.randint(0, 255)}"
     else:
         return "sample-value"
 
 
 def process_statements(parent, yang_statements, groupings=None):
     """
-    Process YANG statements recursively and handle nested choices and cases.
+    Process YANG statements recursively, handling containers, lists, choices, cases, and groupings.
     """
     if groupings is None:
         groupings = {}
@@ -81,7 +83,7 @@ def process_statements(parent, yang_statements, groupings=None):
 
 def yang_to_sample_xml(yang_file: str, root_element: str, num_samples: int = 3):
     """
-    Generate multiple XML samples based on a YANG file, supporting nested choices and cases.
+    Generate multiple XML samples based on a YANG file.
     """
     # Set up the repository and context
     repo = repository.FileRepository(".")
@@ -110,9 +112,9 @@ def yang_to_sample_xml(yang_file: str, root_element: str, num_samples: int = 3):
 
 
 if __name__ == "__main__":
-    yang_file = "example.yang"  # Path to your YANG file
-    root_element = "data"       # Root element name for the generated XML
-    num_samples = 3             # Number of samples to generate
+    yang_file = "ciena-mef-classifier.yang"  # Replace with your YANG file path
+    root_element = "mef-classifier"          # Root element name for the generated XML
+    num_samples = 3                          # Number of samples to generate
 
     try:
         xml_samples = yang_to_sample_xml(yang_file, root_element, num_samples)
@@ -120,8 +122,3 @@ if __name__ == "__main__":
             print(f"Sample {i}:\n{sample}\n")
     except Exception as e:
         print(f"Error: {e}")
-
-
-
-
-
