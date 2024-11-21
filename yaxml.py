@@ -22,7 +22,7 @@ def generate_sample_value(yang_type: str):
 
 def process_statements(parent, yang_statements, groupings=None):
     """
-    Process YANG statements recursively and handle groupings, tagged structures, and switch-case logic.
+    Process YANG statements recursively and handle nested choices and cases.
     """
     if groupings is None:
         groupings = {}
@@ -39,13 +39,18 @@ def process_statements(parent, yang_statements, groupings=None):
                 if grouping_name in groupings:
                     process_statements(parent, groupings[grouping_name], groupings)
 
-            elif stmt.keyword in ["choice"]:
-                # Handle choice/case
+            elif stmt.keyword == "choice":
+                # Handle choice with nested cases
                 choice_elem = ET.SubElement(parent, stmt.arg)
                 cases = [case for case in stmt.substmts if case.keyword == "case"]
                 if cases:
                     selected_case = random.choice(cases)  # Randomly pick one case
                     process_statements(choice_elem, selected_case.substmts, groupings)
+
+            elif stmt.keyword == "case":
+                # Handle nested cases
+                case_elem = ET.SubElement(parent, stmt.arg)
+                process_statements(case_elem, stmt.substmts, groupings)
 
             elif stmt.keyword == "container":
                 # Generate container element
@@ -76,7 +81,7 @@ def process_statements(parent, yang_statements, groupings=None):
 
 def yang_to_sample_xml(yang_file: str, root_element: str, num_samples: int = 3):
     """
-    Generate multiple XML samples based on a YANG file, supporting groupings, tagged structures, and switch-case.
+    Generate multiple XML samples based on a YANG file, supporting nested choices and cases.
     """
     # Set up the repository and context
     repo = repository.FileRepository(".")
