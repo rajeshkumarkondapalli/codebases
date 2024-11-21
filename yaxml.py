@@ -5,7 +5,9 @@ import random
 
 
 def generate_sample_value(yang_type: str):
-    """Generate a sample value based on the YANG type."""
+    """
+    Generate a sample value based on the YANG type.
+    """
     if yang_type == "string":
         return f"sample-{random.randint(100, 999)}"
     elif yang_type == "boolean":
@@ -112,9 +114,9 @@ def yang_to_sample_xml(yang_file: str, root_element: str, num_samples: int = 3):
 
 
 if __name__ == "__main__":
-    yang_file = "ciena-mef-classifier.yang"  # Replace with your YANG file path
-    root_element = "mef-classifier"          # Root element name for the generated XML
-    num_samples = 3                          # Number of samples to generate
+    yang_file = "example.yang"  # Replace with your YANG file path
+    root_element = "mef-classifier"  # Root element name for the generated XML
+    num_samples = 3  # Number of samples to generate
 
     try:
         xml_samples = yang_to_sample_xml(yang_file, root_element, num_samples)
