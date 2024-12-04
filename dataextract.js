@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { useDropzone } from "react-dropzone";
 
 interface ExtractedData {
-  index: string;
-  payload: string;
-  url: string;
+  index: number;
+  payload?: string;
+  url?: string;
+  status: string;
 }
 
 const FileDataExtractor = () => {
@@ -20,12 +21,26 @@ const FileDataExtractor = () => {
       const parser = new DOMParser();
       const doc = parser.parseFromString(text, "text/html");
 
-      // Example: Extract specific data from HTML
-      const index = doc.querySelector("index")?.textContent || "N/A";
-      const payload = doc.querySelector("payload")?.textContent || "N/A";
-      const url = doc.querySelector("url")?.textContent || "N/A";
+      // Locate the <pre> tag containing the JSON
+      const preTag = doc.querySelector("pre");
+      if (preTag) {
+        try {
+          const jsonContent = JSON.parse(preTag.textContent || "{}");
 
-      extractedData.push({ index, payload, url });
+          // Extract data from the JSON structure
+          const apiRecords = jsonContent["bnc-common:api-status"]?.["api-record"] || [];
+          apiRecords.forEach((record: any) => {
+            extractedData.push({
+              index: record.index,
+              payload: record.payload,
+              url: record["url-info"],
+              status: record.status,
+            });
+          });
+        } catch (error) {
+          console.error("Error parsing JSON:", error);
+        }
+      }
     }
 
     setData(extractedData);
@@ -51,14 +66,16 @@ const FileDataExtractor = () => {
                 <th className="border px-4 py-2">Index</th>
                 <th className="border px-4 py-2">Payload</th>
                 <th className="border px-4 py-2">URL</th>
+                <th className="border px-4 py-2">Status</th>
               </tr>
             </thead>
             <tbody>
               {data.map((item, i) => (
                 <tr key={i}>
                   <td className="border px-4 py-2">{item.index}</td>
-                  <td className="border px-4 py-2">{item.payload}</td>
-                  <td className="border px-4 py-2">{item.url}</td>
+                  <td className="border px-4 py-2">{item.payload || "N/A"}</td>
+                  <td className="border px-4 py-2">{item.url || "N/A"}</td>
+                  <td className="border px-4 py-2">{item.status}</td>
                 </tr>
               ))}
             </tbody>
