@@ -21,32 +21,43 @@ const FileDataExtractor = () => {
       const parser = new DOMParser();
       const doc = parser.parseFromString(text, "text/html");
 
-      // Find all <pre> tags recursively
-      const preTags = Array.from(doc.getElementsByTagName("pre"));
-      preTags.forEach((preTag) => {
-        if (preTag.className.includes("copyText-response")) {
-          try {
-            // Parse the JSON within the <pre> tag
-            const jsonContent = JSON.parse(preTag.textContent || "{}");
+      // Recursively search for the <pre> tag that holds the JSON
+      const preTag = findPreTag(doc.body);
+      if (preTag) {
+        try {
+          const jsonContent = JSON.parse(preTag.textContent || "{}");
 
-            // Extract data from the JSON structure
-            const apiRecords = jsonContent["bnc-common:api-status"]?.["api-record"] || [];
-            apiRecords.forEach((record: any) => {
-              extractedData.push({
-                index: record.index,
-                payload: record.payload,
-                url: record["url-info"],
-                status: record.status,
-              });
+          // Extract data from the JSON structure
+          const apiRecords = jsonContent["bnc-common:api-status"]?.["api-record"] || [];
+          apiRecords.forEach((record: any) => {
+            extractedData.push({
+              index: record.index,
+              payload: record.payload,
+              url: record["url-info"],
+              status: record.status,
             });
-          } catch (error) {
-            console.error("Error parsing JSON:", error);
-          }
+          });
+        } catch (error) {
+          console.error("Error parsing JSON:", error);
         }
-      });
+      }
     }
 
     setData(extractedData);
+  };
+
+  // Function to recursively search for the <pre> tag
+  const findPreTag = (element: HTMLElement): HTMLElement | null => {
+    if (element.tagName.toLowerCase() === "pre") {
+      return element;
+    }
+    for (let child of element.children) {
+      const result = findPreTag(child as HTMLElement);
+      if (result) {
+        return result;
+      }
+    }
+    return null;
   };
 
   const { getRootProps, getInputProps } = useDropzone({ onDrop, multiple: true });
