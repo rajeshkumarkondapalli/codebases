@@ -53,3 +53,4 @@ const DataExtractor: React.FC<{ htmlString: string }> = ({ htmlString }) => {
 };
 
 export default DataExtractor;
+
