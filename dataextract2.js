@@ -61,7 +61,8 @@ const DataExtractor: React.FC = () => {
 
   return (
     <div>
-      <input type="file" accept=".html" onChange={handleFileChange} />
+      {/* Here's the button (it's actually a file input element) */}
+      <input type="file" accept=".html" onChange={handleFileChange} /> 
 
       <h2>Extracted Data:</h2>
       <ul>
