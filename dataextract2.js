@@ -1,23 +1,30 @@
 import React, { useState, useEffect } from 'react';
 
-const DataExtractor = ({ htmlString }) => {
-  const [data, setData] = useState([]);
+interface DataItem {
+  url: string;
+  urlInfo: string;
+  index: number;
+  payload: string;
+}
+
+const DataExtractor: React.FC<{ htmlString: string }> = ({ htmlString }) => {
+  const [data, setData] = useState<DataItem[]>([]);
 
   useEffect(() => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlString, 'text/html');
 
-    const extractData = (node) => {
-      let results = [];
+    const extractData = (node: Node): DataItem[] => {
+      let results: DataItem[] = [];
       if (node.nodeType === Node.ELEMENT_NODE) {
-        if (node.textContent.includes('url-info')) {
+        if (node.textContent?.includes('url-info')) {
           const urlInfo = node.textContent.match(/"url-info":\s*"([^"]*)"/)?.[1];
           const index = node.textContent.match(/"index":\s*(\d+)/)?.[1];
           const payload = node.textContent.match(/"payload":\s*"([^"]*)"/)?.[1];
-          const url = node.textContent.match(/"url":\s*"([^"]*)"/)?.[1]; // Assuming "url" exists
+          const url = node.textContent.match(/"url":\s*"([^"]*)"/)?.[1];
 
           if (urlInfo && index && payload && url) {
-            results.push({ url, urlInfo, index, payload });
+            results.push({ url, urlInfo, index: parseInt(index), payload });
           }
         }
         node.childNodes.forEach(child => results = results.concat(extractData(child)));
