@@ -21,8 +21,8 @@ const FileDataExtractor = () => {
       const parser = new DOMParser();
       const doc = parser.parseFromString(text, "text/html");
 
-      // Recursively search for the <pre> tag that holds the JSON
-      const preTag = findPreTag(doc.body);
+      // Find the <pre> tag after the "Response Body" heading
+      const preTag = findPreTagAfterResponseBody(doc.body);
       if (preTag) {
         try {
           const jsonContent = JSON.parse(preTag.textContent || "{}");
@@ -46,15 +46,20 @@ const FileDataExtractor = () => {
     setData(extractedData);
   };
 
-  // Function to recursively search for the <pre> tag
-  const findPreTag = (element: HTMLElement): HTMLElement | null => {
-    if (element.tagName.toLowerCase() === "pre") {
-      return element;
-    }
-    for (let child of element.children) {
-      const result = findPreTag(child as HTMLElement);
-      if (result) {
-        return result;
+  const findPreTagAfterResponseBody = (element: HTMLElement): HTMLElement | null => {
+    // Locate all <h5> elements
+    const h5Elements = element.querySelectorAll("h5");
+
+    for (let h5 of h5Elements) {
+      if (h5.textContent?.trim() === "Response Body") {
+        // Traverse down to find the next <pre> tag
+        let sibling = h5.nextElementSibling;
+        while (sibling) {
+          if (sibling.tagName.toLowerCase() === "pre") {
+            return sibling as HTMLElement;
+          }
+          sibling = sibling.nextElementSibling;
+        }
       }
     }
     return null;
