@@ -21,26 +21,29 @@ const FileDataExtractor = () => {
       const parser = new DOMParser();
       const doc = parser.parseFromString(text, "text/html");
 
-      // Locate the <pre> tag containing the JSON
-      const preTag = doc.querySelector("pre");
-      if (preTag) {
-        try {
-          const jsonContent = JSON.parse(preTag.textContent || "{}");
+      // Find all <pre> tags recursively
+      const preTags = Array.from(doc.getElementsByTagName("pre"));
+      preTags.forEach((preTag) => {
+        if (preTag.className.includes("copyText-response")) {
+          try {
+            // Parse the JSON within the <pre> tag
+            const jsonContent = JSON.parse(preTag.textContent || "{}");
 
-          // Extract data from the JSON structure
-          const apiRecords = jsonContent["bnc-common:api-status"]?.["api-record"] || [];
-          apiRecords.forEach((record: any) => {
-            extractedData.push({
-              index: record.index,
-              payload: record.payload,
-              url: record["url-info"],
-              status: record.status,
+            // Extract data from the JSON structure
+            const apiRecords = jsonContent["bnc-common:api-status"]?.["api-record"] || [];
+            apiRecords.forEach((record: any) => {
+              extractedData.push({
+                index: record.index,
+                payload: record.payload,
+                url: record["url-info"],
+                status: record.status,
+              });
             });
-          });
-        } catch (error) {
-          console.error("Error parsing JSON:", error);
+          } catch (error) {
+            console.error("Error parsing JSON:", error);
+          }
         }
-      }
+      });
     }
 
     setData(extractedData);
