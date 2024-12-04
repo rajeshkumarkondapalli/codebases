@@ -7,26 +7,50 @@ interface DataItem {
   payload: string;
 }
 
-const DataExtractor: React.FC<{ htmlString: string }> = ({ htmlString }) => {
+const DataExtractor: React.FC = () => {
   const [data, setData] = useState<DataItem[]>([]);
+  const [htmlString, setHtmlString] = useState<string>('');
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setHtmlString(e.target?.result as string);
+      };
+      reader.readAsText(file);
+    }
+  };
 
   useEffect(() => {
+    if (!htmlString) return;
+
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlString, 'text/html');
 
     const extractData = (node: Node): DataItem[] => {
       let results: DataItem[] = [];
       if (node.nodeType === Node.ELEMENT_NODE) {
-        if (node.textContent?.includes('url-info')) {
-          const urlInfo = node.textContent.match(/"url-info":\s*"([^"]*)"/)?.[1];
-          const index = node.textContent.match(/"index":\s*(\d+)/)?.[1];
-          const payload = node.textContent.match(/"payload":\s*"([^"]*)"/)?.[1];
-          const url = node.textContent.match(/"url":\s*"([^"]*)"/)?.[1];
-
-          if (urlInfo && index && payload && url) {
-            results.push({ url, urlInfo, index: parseInt(index), payload });
+        const preElements = node.querySelectorAll('pre'); 
+        preElements.forEach(pre => {
+          try {
+            const codeElement = pre.querySelector('code');
+            if (codeElement) {
+              const jsonText = codeElement.textContent || '';
+              const jsonData = JSON.parse(jsonText);
+              if (jsonData.url && jsonData['url-info'] && jsonData.index && jsonData.payload) {
+                results.push({
+                  url: jsonData.url,
+                  urlInfo: jsonData['url-info'],
+                  index: jsonData.index,
+                  payload: jsonData.payload,
+                });
+              }
+            }
+          } catch (error) {
+            console.error('Error parsing JSON:', error);
           }
-        }
+        });
         node.childNodes.forEach(child => results = results.concat(extractData(child)));
       }
       return results;
@@ -37,6 +61,8 @@ const DataExtractor: React.FC<{ htmlString: string }> = ({ htmlString }) => {
 
   return (
     <div>
+      <input type="file" accept=".html" onChange={handleFileChange} />
+
       <h2>Extracted Data:</h2>
       <ul>
         {data.map((item, index) => (
@@ -53,4 +79,3 @@ const DataExtractor: React.FC<{ htmlString: string }> = ({ htmlString }) => {
 };
 
 export default DataExtractor;
-
