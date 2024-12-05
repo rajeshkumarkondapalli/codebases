@@ -25,21 +25,21 @@ const BeautifyXMLComponent: React.FC<BeautifyXMLProps> = () => {
       // Step 2: Parse XML using xmldom
       const doc = new DOMParser().parseFromString(xmlString);
 
-      // Step 3: Remove elements using XPath
+      // Step 3: Remove elements using XPath (remove <data> and <extra>)
       const nodesToRemove = xpath.select("//data | //extra", doc);
       nodesToRemove.forEach((node) => node.parentNode?.removeChild(node));
 
       // Step 4: Convert back to string and remove escaped quotes
       xmlString = new XMLSerializer().serializeToString(doc)
-        .replace(/\\"/g, '"')
+        .replace(/\\"/g, '"') // Remove escaped quotes
         .trim();
 
-      // Step 5: Basic XML validation
+      // Step 5: Basic XML validation (ensure it starts with "<" and ends with ">")
       if (!xmlString.startsWith("<") || !xmlString.endsWith(">")) {
         throw new Error("Extracted content is not valid XML.");
       }
 
-      // Step 6: Beautify XML
+      // Step 6: Beautify the cleaned XML
       const formattedXml = prettier(xmlString, {
         indentation: "  ",
         lineSeparator: "\n",
