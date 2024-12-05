@@ -2,33 +2,33 @@ import { useState } from "react";
 import prettier from "xml-formatter";
 
 const BeautifyXMLComponent: React.FC = () => {
-  const [input, setInput] = useState<string>("");
+  const [input, setInput] = useState<string>(
+    `"raw-response": "\\"<response><data>RemoveThis</data><info>KeepThis</info><extra>RemoveThat</extra></response>\\""`
+  );
   const [beautifiedXml, setBeautifiedXml] = useState<string>("");
-  const [textsToRemove, setTextsToRemove] = useState<string>("");
 
   const handleBeautify = () => {
     try {
       let cleanedInput: string = input;
 
-      // Step 1: Extract content between "raw-response": "\"" and "\""
+      // Step 1: Extract content using the regex
       const match = cleanedInput.match(/"raw-response":\s*\\"(.*?)\\"/);
-      if (match) {
+      if (match && match[1]) {
         cleanedInput = match[1];
       }
 
-      // Step 2: Remove multiple specified text items (comma-separated)
-      if (textsToRemove.trim()) {
-        const patterns = textsToRemove.split(",").map((item) => item.trim());
-        patterns.forEach((pattern) => {
-          const regex = new RegExp(pattern, "g");
-          cleanedInput = cleanedInput.replace(regex, "");
-        });
-      }
+      // Step 2: Remove specific elements (hardcoded)
+      const patternsToRemove = [
+        /<data>.*?<\/data>/g, // Remove the <data>...</data> tag
+        /<extra>.*?<\/extra>/g, // Remove the <extra>...</extra> tag
+      ];
 
-      // Step 3: Remove escaped quotes (\")
-      cleanedInput = cleanedInput.replace(/\\"/g, '"');
+      patternsToRemove.forEach((pattern) => {
+        cleanedInput = cleanedInput.replace(pattern, "");
+      });
 
-      // Step 4: Beautify the extracted XML
+      // Step 3: Beautify the extracted XML
+      cleanedInput = cleanedInput.replace(/\\"/g, '"'); // Remove escaped quotes
       const formattedXml: string = prettier(cleanedInput, {
         indentation: "  ", // Indent with 2 spaces
         lineSeparator: "\n",
@@ -51,13 +51,6 @@ const BeautifyXMLComponent: React.FC = () => {
         className="w-full p-2 border border-gray-300 rounded mb-4"
         rows={6}
       ></textarea>
-      <input
-        type="text"
-        value={textsToRemove}
-        onChange={(e) => setTextsToRemove(e.target.value)}
-        placeholder="Enter comma-separated text to remove"
-        className="w-full p-2 border border-gray-300 rounded mb-4"
-      />
       <button
         onClick={handleBeautify}
         className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
