@@ -4,6 +4,7 @@ import prettier from "xml-formatter";
 const BeautifyXMLComponent: React.FC = () => {
   const [input, setInput] = useState<string>("");
   const [beautifiedXml, setBeautifiedXml] = useState<string>("");
+  const [textsToRemove, setTextsToRemove] = useState<string>("");
 
   const handleBeautify = () => {
     try {
@@ -15,10 +16,19 @@ const BeautifyXMLComponent: React.FC = () => {
         cleanedInput = match[1];
       }
 
-      // Step 2: Remove escaped quotes (\")
+      // Step 2: Remove multiple specified text items (comma-separated)
+      if (textsToRemove.trim()) {
+        const patterns = textsToRemove.split(",").map((item) => item.trim());
+        patterns.forEach((pattern) => {
+          const regex = new RegExp(pattern, "g");
+          cleanedInput = cleanedInput.replace(regex, "");
+        });
+      }
+
+      // Step 3: Remove escaped quotes (\")
       cleanedInput = cleanedInput.replace(/\\"/g, '"');
 
-      // Step 3: Beautify the extracted XML
+      // Step 4: Beautify the extracted XML
       const formattedXml: string = prettier(cleanedInput, {
         indentation: "  ", // Indent with 2 spaces
         lineSeparator: "\n",
@@ -41,6 +51,13 @@ const BeautifyXMLComponent: React.FC = () => {
         className="w-full p-2 border border-gray-300 rounded mb-4"
         rows={6}
       ></textarea>
+      <input
+        type="text"
+        value={textsToRemove}
+        onChange={(e) => setTextsToRemove(e.target.value)}
+        placeholder="Enter comma-separated text to remove"
+        className="w-full p-2 border border-gray-300 rounded mb-4"
+      />
       <button
         onClick={handleBeautify}
         className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
