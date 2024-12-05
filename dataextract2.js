@@ -1,13 +1,13 @@
 import { useState } from "react";
 import prettier from "xml-formatter";
 
-const BeautifyXMLComponent = () => {
+const BeautifyXMLComponent: React.FC = () => {
   const [input, setInput] = useState<string>("");
   const [beautifiedXml, setBeautifiedXml] = useState<string>("");
 
   const handleBeautify = () => {
     try {
-      let cleanedInput = input;
+      let cleanedInput: string = input;
 
       // Step 1: Extract content from "payload" or "raw_response"
       const match = cleanedInput.match(/"payload":\s*"(.*)"|"raw_response":\s*"(.*)"/);
@@ -24,7 +24,7 @@ const BeautifyXMLComponent = () => {
       }
 
       // Step 4: Beautify the XML
-      const formattedXml = prettier(cleanedInput, {
+      const formattedXml: string = prettier(cleanedInput, {
         indentation: "  ", // Indent with 2 spaces
         lineSeparator: "\n",
       });
