@@ -11,24 +11,32 @@ const BeautifyXMLComponent: React.FC = () => {
     try {
       let cleanedInput: string = input;
 
-      // Step 1: Extract content using the regex
+      // Step 1: Extract content using regex
       const match = cleanedInput.match(/"raw-response":\s*\\"(.*?)\\"/);
       if (match && match[1]) {
         cleanedInput = match[1];
+      } else {
+        throw new Error("No valid XML found in the input.");
       }
 
       // Step 2: Remove specific elements (hardcoded)
       const patternsToRemove = [
-        /<data>.*?<\/data>/g, // Remove the <data>...</data> tag
-        /<extra>.*?<\/extra>/g, // Remove the <extra>...</extra> tag
+        /<data>.*?<\/data>/g, // Remove <data>...</data> tags
+        /<extra>.*?<\/extra>/g, // Remove <extra>...</extra> tags
       ];
-
       patternsToRemove.forEach((pattern) => {
         cleanedInput = cleanedInput.replace(pattern, "");
       });
 
-      // Step 3: Beautify the extracted XML
-      cleanedInput = cleanedInput.replace(/\\"/g, '"'); // Remove escaped quotes
+      // Step 3: Remove escaped quotes
+      cleanedInput = cleanedInput.replace(/\\"/g, '"').trim();
+
+      // Step 4: Validate that the content looks like XML
+      if (!cleanedInput.startsWith("<") || !cleanedInput.endsWith(">")) {
+        throw new Error("Extracted content is not valid XML.");
+      }
+
+      // Step 5: Beautify XML
       const formattedXml: string = prettier(cleanedInput, {
         indentation: "  ", // Indent with 2 spaces
         lineSeparator: "\n",
@@ -36,8 +44,8 @@ const BeautifyXMLComponent: React.FC = () => {
 
       setBeautifiedXml(formattedXml);
     } catch (error) {
-      console.error("Error beautifying XML:", error);
-      setBeautifiedXml("Error: Invalid XML input.");
+      console.error("Error beautifying XML:", error.message);
+      setBeautifiedXml(`Error: ${error.message}`);
     }
   };
 
