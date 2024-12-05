@@ -9,21 +9,16 @@ const BeautifyXMLComponent: React.FC = () => {
     try {
       let cleanedInput: string = input;
 
-      // Step 1: Extract content from "payload" or "raw_response"
-      const match = cleanedInput.match(/"payload":\s*"(.*)"|"raw_response":\s*"(.*)"/);
+      // Step 1: Extract content between "raw-response": "\"" and "\""
+      const match = cleanedInput.match(/"raw-response":\s*\\"(.*?)\\"/);
       if (match) {
-        cleanedInput = match[1] || match[2] || cleanedInput;
+        cleanedInput = match[1];
       }
 
-      // Step 2: Remove escaped quotes (\") and other escape sequences
+      // Step 2: Remove escaped quotes (\")
       cleanedInput = cleanedInput.replace(/\\"/g, '"');
 
-      // Step 3: Remove surrounding quotes if they exist
-      if (cleanedInput.startsWith('"') && cleanedInput.endsWith('"')) {
-        cleanedInput = cleanedInput.slice(1, -1);
-      }
-
-      // Step 4: Beautify the XML
+      // Step 3: Beautify the extracted XML
       const formattedXml: string = prettier(cleanedInput, {
         indentation: "  ", // Indent with 2 spaces
         lineSeparator: "\n",
@@ -42,7 +37,7 @@ const BeautifyXMLComponent: React.FC = () => {
       <textarea
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        placeholder='Paste your XML input, e.g., "payload": "<request>...</request>"'
+        placeholder='Paste your input, e.g., "raw-response": "\\"<response>...</response>\\""'
         className="w-full p-2 border border-gray-300 rounded mb-4"
         rows={6}
       ></textarea>
