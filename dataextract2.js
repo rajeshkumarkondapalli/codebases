@@ -7,40 +7,38 @@ interface BeautifyXMLProps {}
 
 const BeautifyXMLComponent: React.FC<BeautifyXMLProps> = () => {
   const [input, setInput] = useState<string>(
-    `"raw-response": "\\"<response><data>RemoveThis</data><info>KeepThis</info><extra>RemoveThat</extra></response>\\""`
+    `"raw-response": "\\"<response xmlns=\\"urn:ietf:params:xml:ns:netconf:base:1.0\\"><data>...</data><info>...</info></response>\\""`
   );
   const [beautifiedXml, setBeautifiedXml] = useState<string>("");
 
   const handleBeautify = () => {
     try {
-      // Step 1: Extract XML content using regex
+      // Step 1: Extract XML content from raw-response
       const match = input.match(/"raw-response":\s*\\?"(.*?)\\?"/s);
       if (!match || !match[1]) {
         throw new Error(
           "No valid XML found in the input. Ensure the input is in the format 'raw-response': \"<xml>\""
         );
       }
-      let xmlString = match[1];
 
-      // Step 2: Parse XML using xmldom
-      const doc = new DOMParser().parseFromString(xmlString);
-
-      // Step 3: Remove elements using XPath (remove <data> and <extra>)
-      const nodesToRemove = xpath.select("//data | //extra", doc);
-      nodesToRemove.forEach((node) => node.parentNode?.removeChild(node));
-
-      // Step 4: Convert back to string and remove escaped quotes
-      xmlString = new XMLSerializer().serializeToString(doc)
+      // Decode the escaped XML
+      let xmlString = match[1]
+        .replace(/\\n/g, "") // Remove escaped newlines
         .replace(/\\"/g, '"') // Remove escaped quotes
         .trim();
 
-      // Step 5: Basic XML validation (ensure it starts with "<" and ends with ">")
-      if (!xmlString.startsWith("<") || !xmlString.endsWith(">")) {
-        throw new Error("Extracted content is not valid XML.");
-      }
+      // Step 2: Parse XML using xmldom
+      const doc = new DOMParser().parseFromString(xmlString, "application/xml");
 
-      // Step 6: Beautify the cleaned XML
-      const formattedXml = prettier(xmlString, {
+      // Step 3: Remove elements using XPath (e.g., remove <data> elements)
+      const nodesToRemove = xpath.select("//data | //extra", doc); // Adjust XPath to match unwanted elements
+      nodesToRemove.forEach((node) => node.parentNode?.removeChild(node));
+
+      // Step 4: Serialize back to string
+      const cleanedXml = new XMLSerializer().serializeToString(doc);
+
+      // Step 5: Beautify XML
+      const formattedXml = prettier(cleanedXml, {
         indentation: "  ",
         lineSeparator: "\n",
       });
@@ -58,7 +56,7 @@ const BeautifyXMLComponent: React.FC<BeautifyXMLProps> = () => {
       <textarea
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        placeholder='Paste your input, e.g., "raw-response": "\\"<response>...</response>\\""'
+        placeholder="Paste the input containing 'raw-response'"
         className="w-full p-2 border border-gray-300 rounded mb-4"
         rows={6}
       ></textarea>
