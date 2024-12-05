@@ -1,7 +1,11 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import prettier from "xml-formatter";
+import xpath from "xpath";
+import { DOMParser, XMLSerializer } from "xmldom";
 
-const BeautifyXMLComponent: React.FC = () => {
+interface BeautifyXMLProps {}
+
+const BeautifyXMLComponent: React.FC<BeautifyXMLProps> = () => {
   const [input, setInput] = useState<string>(
     `"raw-response": "\\"<response><data>RemoveThis</data><info>KeepThis</info><extra>RemoveThat</extra></response>\\""`
   );
@@ -9,42 +13,41 @@ const BeautifyXMLComponent: React.FC = () => {
 
   const handleBeautify = () => {
     try {
-      let cleanedInput: string = input;
-
-      // Step 1: Extract content using regex
-      const match = cleanedInput.match(/"raw-response":\s*\\"(.*?)\\"/);
-      if (match && match[1]) {
-        cleanedInput = match[1];
-      } else {
-        throw new Error("No valid XML found in the input.");
+      // Step 1: Extract XML content using regex
+      const match = input.match(/"raw-response":\s*\\?"(.*?)\\?"/s);
+      if (!match || !match[1]) {
+        throw new Error(
+          "No valid XML found in the input. Ensure the input is in the format 'raw-response': \"<xml>\""
+        );
       }
+      let xmlString = match[1];
 
-      // Step 2: Remove specific elements (hardcoded)
-      const patternsToRemove = [
-        /<data>.*?<\/data>/g, // Remove <data>...</data> tags
-        /<extra>.*?<\/extra>/g, // Remove <extra>...</extra> tags
-      ];
-      patternsToRemove.forEach((pattern) => {
-        cleanedInput = cleanedInput.replace(pattern, "");
-      });
+      // Step 2: Parse XML using xmldom
+      const doc = new DOMParser().parseFromString(xmlString);
 
-      // Step 3: Remove escaped quotes
-      cleanedInput = cleanedInput.replace(/\\"/g, '"').trim();
+      // Step 3: Remove elements using XPath
+      const nodesToRemove = xpath.select("//data | //extra", doc);
+      nodesToRemove.forEach((node) => node.parentNode?.removeChild(node));
 
-      // Step 4: Validate that the content looks like XML
-      if (!cleanedInput.startsWith("<") || !cleanedInput.endsWith(">")) {
+      // Step 4: Convert back to string and remove escaped quotes
+      xmlString = new XMLSerializer().serializeToString(doc)
+        .replace(/\\"/g, '"')
+        .trim();
+
+      // Step 5: Basic XML validation
+      if (!xmlString.startsWith("<") || !xmlString.endsWith(">")) {
         throw new Error("Extracted content is not valid XML.");
       }
 
-      // Step 5: Beautify XML
-      const formattedXml: string = prettier(cleanedInput, {
-        indentation: "  ", // Indent with 2 spaces
+      // Step 6: Beautify XML
+      const formattedXml = prettier(xmlString, {
+        indentation: "  ",
         lineSeparator: "\n",
       });
 
       setBeautifiedXml(formattedXml);
-    } catch (error) {
-      console.error("Error beautifying XML:", error.message);
+    } catch (error: any) {
+      console.error("Error beautifying XML:", error);
       setBeautifiedXml(`Error: ${error.message}`);
     }
   };
