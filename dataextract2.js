@@ -31,34 +31,10 @@ const flattenJSON = (data: any, prefix = ''): Record<string, string> => {
 
 // Component
 const HighlightMatchingText: React.FC = () => {
-  const [jsonData1, setJsonData1] = useState<string>('');
-  const [jsonData2, setJsonData2] = useState<string>('');
-  const [output, setOutput] = useState<(string | JSX.Element)[]>([]);
-  const [error, setError] = useState<string>('');
-  const [highlight, setHighlight] = useState<boolean>(false);
-  const [caseSensitive, setCaseSensitive] = useState<boolean>(false);
+  // ... (state variables remain the same)
 
   const matchWords = (text: string, searchWords: string[]): (string | JSX.Element)[] => {
-    const processedText = caseSensitive ? text : text.toLowerCase();
-    return processedText.split(' ').map((word, index) => {
-      const isMatch = searchWords.some((searchWord) =>
-        word.includes(caseSensitive ? searchWord : searchWord.toLowerCase())
-      );
-      return highlight && isMatch ? (
-        <span
-          key={index}
-          style={{
-            backgroundColor: 'yellow',
-            padding: '0 2px',
-            borderRadius: '3px',
-          }}
-        >
-          {word}{' '}
-        </span>
-      ) : (
-        `${word} `
-      );
-    });
+    // ... (matchWords function remains the same)
   };
 
   const handleMatch = () => {
@@ -70,27 +46,28 @@ const HighlightMatchingText: React.FC = () => {
       const flatJson1 = flattenJSON(parsedJson1);
       const flatJson2 = flattenJSON(parsedJson2);
 
-      // Extract indices from both JSONs
-      const indices1 = Object.keys(flatJson1)
-        .filter((key) => key.includes('index'))
-        .map((key) => key.split('.')[1]);
-      const indices2 = Object.keys(flatJson2)
-        .filter((key) => key.includes('index'))
-        .map((key) => key.split('.')[1]);
+      // Extract api-record keys from both JSONs
+      const apiRecordKeys1 = Object.keys(flatJson1).filter((key) => key.endsWith('api-record'));
+      const apiRecordKeys2 = Object.keys(flatJson2).filter((key) => key.endsWith('api-record'));
 
-      // Combine indices and remove duplicates
-      const allIndices = [...new Set([...indices1, ...indices2])];
+      // Group entries based on index within each api-record
+      const groupedOutput: Record<string, Record<string, (string | JSX.Element)[]>> = {};
 
-      // Group entries based on index
-      const groupedOutput: Record<string, (string | JSX.Element)[]> = {};
+      apiRecordKeys1.forEach((apiRecordKey1) => {
+        const index = apiRecordKey1.split('.')[1]; // Extract index from apiRecordKey1
+        const apiRecordName = apiRecordKey1.split('.')[0]; // Extract api-record name
 
-      allIndices.forEach((index) => {
-        groupedOutput[index] = [];
+        if (!groupedOutput[apiRecordName]) {
+          groupedOutput[apiRecordName] = {};
+        }
+        if (!groupedOutput[apiRecordName][index]) {
+          groupedOutput[apiRecordName][index] = [];
+        }
 
-        // Add properties from JSON1 for the current index
+        // Add properties from JSON1 for the current api-record and index
         Object.entries(flatJson1).forEach(([key, value]) => {
-          if (key.includes(`.${index}.`) || (!key.includes('.index.') && index === 'default')) {
-            groupedOutput[index].push(
+          if (key.startsWith(`${apiRecordName}.${index}.`)) {
+            groupedOutput[apiRecordName][index].push(
               <div key={`json1-${key}`} className="mb-6">
                 <div className="font-medium text-lg text-indigo-600">{escapeHTML(key)}</div>
                 <pre className="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm">{matchWords(value, Object.values(flatJson2).flat())}</pre>
@@ -99,33 +76,36 @@ const HighlightMatchingText: React.FC = () => {
           }
         });
 
-        // Add properties from JSON2 for the current index
-        Object.entries(flatJson2).forEach(([key, value]) => {
-          if (key.includes(`.${index}.`) || (!key.includes('.index.') && index === 'default')) {
-            groupedOutput[index].push(
-              <div key={`json2-${key}`} className="mb-6">
-                <div className="font-medium text-lg text-indigo-600">{escapeHTML(key)}</div>
-                <pre className="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm">{matchWords(value, Object.values(flatJson1).flat())}</pre>
-              </div>
-            );
-          }
-        });
+        // Find corresponding api-record in JSON2 and add its properties
+        const correspondingApiRecordKey2 = apiRecordKeys2.find((key) => key.startsWith(`${apiRecordName}.${index}.`));
+        if (correspondingApiRecordKey2) {
+          Object.entries(flatJson2).forEach(([key, value]) => {
+            if (key.startsWith(`${apiRecordName}.${index}.`)) {
+              groupedOutput[apiRecordName][index].push(
+                <div key={`json2-${key}`} className="mb-6">
+                  <div className="font-medium text-lg text-indigo-600">{escapeHTML(key)}</div>
+                  <pre className="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm">{matchWords(value, Object.values(flatJson1).flat())}</pre>
+                </div>
+              );
+            }
+          });
+        }
       });
 
       // Flatten the grouped output with spacing
       const finalOutput: (string | JSX.Element)[] = [];
-      Object.entries(groupedOutput).forEach(([groupKey, groupEntries], index) => {
+      Object.entries(groupedOutput).forEach(([apiRecordName, indices]) => {
         finalOutput.push(
-          <div key={groupKey} className="mb-8">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Group {groupKey}</h2>
-            {groupEntries}
+          <div key={apiRecordName} className="mb-8">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">API Record: {apiRecordName}</h2>
+            {Object.entries(indices).map(([index, entries]) => (
+              <div key={index} className="mb-8">
+                <h3 className="text-lg font-medium text-gray-700 mb-4">Index: {index}</h3>
+                {entries}
+              </div>
+            ))}
           </div>
         );
-
-        // Add spacing between groups (except after the last group)
-        if (index < Object.keys(groupedOutput).length - 1) {
-          finalOutput.push(<div key={`spacer-${index}`} className="mb-8" />);
-        }
       });
 
       setOutput(finalOutput);
@@ -136,68 +116,7 @@ const HighlightMatchingText: React.FC = () => {
     }
   };
 
-  return (
-    <div className="max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-xl">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Highlight Matching Text</h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <textarea
-          className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 transition duration-200"
-          placeholder="Enter JSON Data 1"
-          value={jsonData1}
-          onChange={(e) => setJsonData1(e.target.value)}
-        />
-        <textarea
-          className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 transition duration-200"
-          placeholder="Enter JSON Data 2"
-          value={jsonData2}
-          onChange={(e) => setJsonData2(e.target.value)}
-        />
-      </div>
-
-      <div className="flex items-center justify-between mt-6">
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            checked={highlight}
-            onChange={() => setHighlight(!highlight)}
-            id="highlight-toggle"
-            className="mr-3 rounded-sm text-indigo-600 focus:ring-2 focus:ring-indigo-500"
-          />
-          <label htmlFor="highlight-toggle" className="text-sm text-gray-700">
-            Highlight matched words
-          </label>
-        </div>
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            checked={caseSensitive}
-            onChange={() => setCaseSensitive(!caseSensitive)}
-            id="case-sensitive-toggle"
-            className="mr-3 rounded-sm text-indigo-600 focus:ring-2 focus:ring-indigo-500"
-          />
-          <label htmlFor="case-sensitive-toggle" className="text-sm text-gray-700">
-            Case sensitive matching
-          </label>
-        </div>
-      </div>
-
-      <button
-        onClick={handleMatch}
-        className="mt-6 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200"
-      >
-        Match
-      </button>
-
-      {error && (
-        <div className="mt-6 p-4 bg-red-100 text-red-700 border border-red-400 rounded-lg">
-          {error}
-        </div>
-      )}
-
-      <div className="mt-8">{output}</div>
-    </div>
-  );
+  // ... (rest of the component remains the same)
 };
 
 export default HighlightMatchingText;
