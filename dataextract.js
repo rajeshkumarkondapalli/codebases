@@ -3,8 +3,7 @@ import { useState } from 'react';
 const HighlightMatchingText: React.FC = () => {
   const [jsonData1, setJsonData1] = useState<string>('');
   const [jsonData2, setJsonData2] = useState<string>('');
-  const [matches, setMatches] = useState<string[]>([]);
-  const [nonMatches, setNonMatches] = useState<string[]>([]);
+  const [output, setOutput] = useState<string>('');
   const [error, setError] = useState<string>('');
 
   // Escape special characters for safe rendering
@@ -36,6 +35,31 @@ const HighlightMatchingText: React.FC = () => {
     return result;
   };
 
+  // Highlight words found in the second JSON data in the first JSON data
+  const highlightWords = (text: string, searchWords: string[]) => {
+    return escapeHTML(text)
+      .split(' ')
+      .map((word, index) => {
+        const isMatch = searchWords.includes(word);
+        return isMatch ? (
+          <span
+            key={index}
+            style={{
+              backgroundColor: 'yellow',
+              fontWeight: 'bold',
+              color: 'black',
+              padding: '0 2px',
+              borderRadius: '3px',
+            }}
+          >
+            {word}{' '}
+          </span>
+        ) : (
+          <span key={index}>{word} </span>
+        );
+      });
+  };
+
   const handleMatch = () => {
     try {
       // Parse and flatten both JSON inputs
@@ -45,52 +69,23 @@ const HighlightMatchingText: React.FC = () => {
       const flatJson1 = flattenJSON(parsedJson1);
       const flatJson2 = flattenJSON(parsedJson2);
 
-      const allKeys1 = Object.keys(flatJson1);
-      const allKeys2 = Object.keys(flatJson2);
+      // Extract words from JSON data for matching
+      const wordsToMatch = Object.values(flatJson2).join(' ').split(' '); // Create an array of words from JSON 2
 
-      const matchingValues: string[] = [];
-      const nonMatchingValues: string[] = [];
+      let result = '';
 
-      // Compare both sets of keys and values
-      allKeys1.forEach((key, index) => {
-        const value1 = flatJson1[key];
-        const value2 = flatJson2[allKeys2[index]]; // Ensure both are compared correctly by index
-
-        if (value1 === value2) {
-          matchingValues.push(value1); // Match found
-        } else {
-          nonMatchingValues.push(value1); // No match, add to non-matches
-        }
+      // Go through each value in the first JSON and highlight matching words
+      Object.values(flatJson1).forEach((value, index) => {
+        const highlightedText = highlightWords(value, wordsToMatch);
+        result += `<p key=${index}>${highlightedText}</p>`;
       });
 
-      setMatches(matchingValues);
-      setNonMatches(nonMatchingValues);
+      setOutput(result);
       setError('');
     } catch (e) {
       setError('Invalid JSON input. Please provide properly formatted JSON.');
-      setMatches([]);
-      setNonMatches([]);
+      setOutput('');
     }
-  };
-
-  const highlightText = (text: string, type: 'match' | 'non-match') => {
-    const color = type === 'match' ? 'yellow' : 'red'; // Use different colors for match/non-match
-    return escapeHTML(text)
-      .split(' ')
-      .map((word, index) => (
-        <span
-          key={index}
-          style={{
-            backgroundColor: color,
-            fontWeight: 'bold',
-            color: 'black',
-            padding: '0 2px',
-            borderRadius: '3px',
-          }}
-        >
-          {word}{' '}
-        </span>
-      ));
   };
 
   return (
@@ -135,33 +130,10 @@ const HighlightMatchingText: React.FC = () => {
         </button>
       </div>
 
-      {/* Display Matches */}
+      {/* Display Result */}
       <div className="bg-white p-4 rounded-lg shadow-md">
-        <h2 className="text-lg font-semibold text-gray-700">Matching Text</h2>
-        <div className="mt-2">
-          {matches.length > 0 ? (
-            matches.map((text, index) => (
-              <p key={index} className="text-gray-800">
-                {highlightText(text, 'match')}
-              </p>
-            ))
-          ) : (
-            <p className="text-gray-500">No matching values found.</p>
-          )}
-        </div>
-
-        <h2 className="text-lg font-semibold text-gray-700 mt-4">Non-Matching Text</h2>
-        <div className="mt-2">
-          {nonMatches.length > 0 ? (
-            nonMatches.map((text, index) => (
-              <p key={index} className="text-gray-800">
-                {highlightText(text, 'non-match')}
-              </p>
-            ))
-          ) : (
-            <p className="text-gray-500">No non-matching values found.</p>
-          )}
-        </div>
+        <h2 className="text-lg font-semibold text-gray-700">Output</h2>
+        <div className="mt-2" dangerouslySetInnerHTML={{ __html: output }} />
       </div>
     </div>
   );
