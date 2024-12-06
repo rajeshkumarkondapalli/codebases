@@ -217,5 +217,3 @@ const HighlightMatchingText: React.FC = () => {
 };
 
 export default HighlightMatchingText;
-
-
