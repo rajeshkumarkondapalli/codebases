@@ -94,7 +94,9 @@ const HighlightMatchingText: React.FC = () => {
       const groupedOutput: Record<string, (string | JSX.Element)[]> = {};
 
       Object.entries(filteredJson1).forEach(([key, value], index) => {
-        const groupKey = key.includes('index') ? key.split('.')[0] : `Group ${Math.floor(index / 5)}`;
+        // Use a group index starting from 1
+        const groupKey = key.includes('index') ? key.split('.')[0] : `Group ${Math.floor(index / 5) + 1}`;
+
         if (!groupedOutput[groupKey]) {
           groupedOutput[groupKey] = [];
         }
