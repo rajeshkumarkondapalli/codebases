@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-// Utility functions
+// Utility function to escape HTML characters
 const escapeHTML = (str: string): string =>
   str.replace(/[&<>"']/g, (char) => {
     const escapeMap: Record<string, string> = {
@@ -13,9 +13,6 @@ const escapeHTML = (str: string): string =>
     return escapeMap[char] || char;
   });
 
-const unescapeHTML = (str: string): string =>
-  str.replace(/&quot;/g, '"').replace(/&amp;/g, '&');
-
 // Component
 const HighlightMatchingText: React.FC = () => {
   const [jsonData1, setJsonData1] = useState<string>('');
@@ -25,12 +22,12 @@ const HighlightMatchingText: React.FC = () => {
 
   const handleMatch = () => {
     try {
-      // Parse and validate JSON input
-      const parsedJson1 = JSON.parse(unescapeHTML(jsonData1.trim()));
-      const parsedJson2 = JSON.parse(unescapeHTML(jsonData2.trim()));
+      // Parse and validate JSON input without unescaping HTML
+      const parsedJson1 = JSON.parse(jsonData1.trim());
+      const parsedJson2 = JSON.parse(jsonData2.trim());
 
       // Create a map to organize the data by index
-      const dataByIndex = new Map();
+      const dataByIndex: Map<string, any> = new Map();
 
       const organizeData = (json: any[], fileKey: string) => {
         json.forEach((item) => {
