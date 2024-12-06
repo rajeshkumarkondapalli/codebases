@@ -20,6 +20,10 @@ const HighlightMatchingText: React.FC = () => {
     });
   };
 
+  const unescapeHTML = (str: string) => {
+    return str.replace(/&quot;/g, '"');
+  };
+
   const flattenJSON = (data: any, prefix = ''): Record<string, string> => {
     let result: Record<string, string> = {};
     for (const key in data) {
@@ -57,8 +61,8 @@ const HighlightMatchingText: React.FC = () => {
 
   const handleMatch = () => {
     try {
-      const parsedJson1 = JSON.parse(jsonData1.trim());
-      const parsedJson2 = JSON.parse(jsonData2.trim());
+      const parsedJson1 = JSON.parse(unescapeHTML(jsonData1.trim()));
+      const parsedJson2 = JSON.parse(unescapeHTML(jsonData2.trim()));
 
       const flatJson1 = flattenJSON(parsedJson1);
       const flatJson2 = flattenJSON(parsedJson2);
