@@ -70,7 +70,7 @@ const HighlightMatchingText: React.FC = () => {
       const flatJson2 = flattenJSON(parsedJson2);
 
       // Filter fields
-      const allowedFields = ['raw-response', 'url-info', 'payload', 'index'];
+      const allowedFields = ['raw-response', 'url-info', 'payload', 'index', 'url', 'api-record'];
       const filteredJson1 = Object.fromEntries(
         Object.entries(flatJson1).filter(([key]) =>
           allowedFields.some((field) => key.endsWith(field))
@@ -90,18 +90,24 @@ const HighlightMatchingText: React.FC = () => {
         ? searchWords
         : searchWords.map((word) => word.toLowerCase());
 
-      // Generate output with URL
-      const matchedOutput: (string | JSX.Element)[] = [];
+      // Group entries by 'api-record'
+      const groupedOutput: Record<string, (string | JSX.Element)[]> = {};
+
       Object.entries(filteredJson1).forEach(([key, value], index) => {
-        matchedOutput.push(
-          <div key={index} className="mb-6">
-            <p className="font-semibold text-lg text-indigo-600">{escapeHTML(key)}</p>
-            {key === 'url-info' ? (
-              <p className="text-blue-500">
+        const apiRecord = key.includes('api-record') ? key.split('.')[0] : 'default';
+        if (!groupedOutput[apiRecord]) {
+          groupedOutput[apiRecord] = [];
+        }
+
+        groupedOutput[apiRecord].push(
+          <div key={index} className="mb-6 border p-4 rounded-lg shadow-md">
+            <div className="font-medium text-lg text-indigo-600">{escapeHTML(key)}</div>
+            {key === 'url-info' || key === 'url' ? (
+              <div className="text-blue-500">
                 <a href={value} target="_blank" rel="noopener noreferrer" className="hover:underline">
                   {value}
                 </a>
-              </p>
+              </div>
             ) : (
               <pre className="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm">{matchWords(value, processedSearchWords)}</pre>
             )}
@@ -109,10 +115,25 @@ const HighlightMatchingText: React.FC = () => {
         );
       });
 
-      setOutput(matchedOutput);
+      // Flatten the grouped output with spacing
+      const finalOutput: (string | JSX.Element)[] = [];
+      Object.entries(groupedOutput).forEach(([groupKey, groupEntries], index) => {
+        finalOutput.push(
+          <div key={groupKey} className="mb-8">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">{groupKey}</h2>
+            {groupEntries}
+          </div>
+        );
+
+        // Add spacing between groups (except after the last group)
+        if (index < Object.keys(groupedOutput).length - 1) {
+          finalOutput.push(<div key={`spacer-${index}`} className="mb-8" />);
+        }
+      });
+
+      setOutput(finalOutput);
       setError('');
     } catch (e: any) {
-      // Handle errors
       setError(`Invalid JSON input: ${e.message}`);
       setOutput([]);
     }
@@ -121,8 +142,7 @@ const HighlightMatchingText: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-xl">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Highlight Matching Text</h1>
-      
-      {/* Input Section */}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <textarea
           className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 transition duration-200"
@@ -138,7 +158,6 @@ const HighlightMatchingText: React.FC = () => {
         />
       </div>
 
-      {/* Checkboxes for settings */}
       <div className="flex items-center justify-between mt-6">
         <div className="flex items-center">
           <input
@@ -166,7 +185,6 @@ const HighlightMatchingText: React.FC = () => {
         </div>
       </div>
 
-      {/* Match Button */}
       <button
         onClick={handleMatch}
         className="mt-6 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200"
@@ -174,7 +192,6 @@ const HighlightMatchingText: React.FC = () => {
         Match
       </button>
 
-      {/* Output Section */}
       <div className="mt-8">
         {error ? (
           <p className="text-red-600 font-semibold">{error}</p>
