@@ -86,7 +86,7 @@ const HighlightMatchingText: React.FC = () => {
                     {value}
                   </a>
                 ) : (
-                  <pre className="text-gray-600 whitespace-pre-wrap break-words text-sm">{matchWords(value, Object.values(flatJson2).flat())}</pre>
+                  <pre className="text-gray-600 whitespace-pre-wrap break-words text-sm">{matchWords(value?.toString() || '', Object.values(flatJson2).flat())}</pre>
                 )}
               </div>
             );
@@ -103,7 +103,7 @@ const HighlightMatchingText: React.FC = () => {
                     {value}
                   </a>
                 ) : (
-                  <pre className="text-gray-600 whitespace-pre-wrap break-words text-sm">{matchWords(value, Object.values(flatJson1).flat())}</pre>
+                  <pre className="text-gray-600 whitespace-pre-wrap break-words text-sm">{matchWords(value?.toString() || '', Object.values(flatJson1).flat())}</pre>
                 )}
               </div>
             );
