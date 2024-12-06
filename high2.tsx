@@ -41,7 +41,7 @@ const HighlightMatchingText: React.FC = () => {
     });
   };
 
-  // Function to handle newlines and double quotes in the text
+  // Function to handle newlines, hyphens, and double quotes in the text
   const formatText = (text: string) => {
     // Handle newline characters by converting \n to <br/>
     const formattedText = text.split('\n').map((line, index) => {
@@ -52,6 +52,7 @@ const HighlightMatchingText: React.FC = () => {
         </span>
       );
     });
+
     return formattedText;
   };
 
