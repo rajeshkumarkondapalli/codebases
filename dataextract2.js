@@ -16,7 +16,7 @@ const escapeHTML = (str: string): string =>
 const unescapeHTML = (str: string): string =>
   str.replace(/&quot;/g, '"').replace(/&amp;/g, '&');
 
-// Flatten the JSON object and flatten nested objects
+// Function to flatten nested JSON
 const flattenJSON = (data: any, prefix = ''): Record<string, string> => {
   let result: Record<string, string> = {};
   for (const key in data) {
@@ -83,26 +83,18 @@ const HighlightMatchingText: React.FC = () => {
         )
       );
 
-      const searchWords = Object.values(filteredJson2)
-        .flatMap((value) => value.split(' '))
-        .filter((word) => word);
-
-      const processedSearchWords = caseSensitive
-        ? searchWords
-        : searchWords.map((word) => word.toLowerCase());
-
-      // Group entries by 'index' or 'api-record'
+      // Group entries based on index
       const groupedOutput: Record<string, (string | JSX.Element)[]> = {};
 
       Object.entries(filteredJson1).forEach(([key, value], index) => {
-        const indexKey = key.includes('index') ? 'index' : key.includes('api-record') ? 'api-record' : 'default';
-        
-        if (!groupedOutput[indexKey]) {
-          groupedOutput[indexKey] = [];
+        const indexValue = key.includes('index') ? key.split('.')[1] : 'default';
+
+        if (!groupedOutput[indexValue]) {
+          groupedOutput[indexValue] = [];
         }
 
-        groupedOutput[indexKey].push(
-          <div key={index} className="mb-6">
+        groupedOutput[indexValue].push(
+          <div key={`json1-${index}`} className="mb-6">
             <div className="font-medium text-lg text-indigo-600">{escapeHTML(key)}</div>
             {key === 'url-info' || key === 'url' ? (
               <div className="text-blue-500">
@@ -111,7 +103,31 @@ const HighlightMatchingText: React.FC = () => {
                 </a>
               </div>
             ) : (
-              <pre className="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm">{matchWords(value, processedSearchWords)}</pre>
+              <pre className="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm">{matchWords(value, Object.values(filteredJson2).flat())}</pre>
+            )}
+          </div>
+        );
+      });
+
+      // For JSON2, add corresponding properties to the same index group
+      Object.entries(filteredJson2).forEach(([key, value], index) => {
+        const indexValue = key.includes('index') ? key.split('.')[1] : 'default';
+
+        if (!groupedOutput[indexValue]) {
+          groupedOutput[indexValue] = [];
+        }
+
+        groupedOutput[indexValue].push(
+          <div key={`json2-${index}`} className="mb-6">
+            <div className="font-medium text-lg text-indigo-600">{escapeHTML(key)}</div>
+            {key === 'url-info' || key === 'url' ? (
+              <div className="text-blue-500">
+                <a href={value} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                  {value}
+                </a>
+              </div>
+            ) : (
+              <pre className="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm">{matchWords(value, Object.values(filteredJson1).flat())}</pre>
             )}
           </div>
         );
@@ -122,7 +138,7 @@ const HighlightMatchingText: React.FC = () => {
       Object.entries(groupedOutput).forEach(([groupKey, groupEntries], index) => {
         finalOutput.push(
           <div key={groupKey} className="mb-8">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">{groupKey === 'index' ? 'Index Group' : groupKey === 'api-record' ? 'API Record Group' : 'Default Group'}</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Group {groupKey}</h2>
             {groupEntries}
           </div>
         );
@@ -194,19 +210,13 @@ const HighlightMatchingText: React.FC = () => {
         Match
       </button>
 
-      <div className="mt-8">
-        {error ? (
-          <p className="text-red-600 font-semibold">{error}</p>
-        ) : (
-          <div className="bg-white p-6 border border-gray-200 rounded-lg shadow-sm">
-            {output.length > 0 ? (
-              <div>{output}</div>
-            ) : (
-              <p className="text-gray-500">No output to display</p>
-            )}
-          </div>
-        )}
-      </div>
+      {error && (
+        <div className="mt-6 p-4 bg-red-100 text-red-700 border border-red-400 rounded-lg">
+          {error}
+        </div>
+      )}
+
+      <div className="mt-8">{output}</div>
     </div>
   );
 };
