@@ -1,19 +1,125 @@
 const HighlightMatchingText: React.FC = () => {
-  // ... (other state and functions)
+  const [jsonData1, setJsonData1] = useState<string>('');
+  const [jsonData2, setJsonData2] = useState<string>('');
+  const [output, setOutput] = useState<(string | JSX.Element)[]>([]);
+  const [error, setError] = useState<string>('');
+  const [highlight, setHighlight] = useState<boolean>(false);
+  const [caseSensitive, setCaseSensitive] = useState<boolean>(false);
+
+  const matchWords = (text: string, searchWords: string[]): (string | JSX.Element)[] => {
+    const processedText = caseSensitive ? text : text.toLowerCase();
+    return processedText.split(' ').map((word, index) => {
+      const isMatch = searchWords.some((searchWord) =>
+        word.includes(caseSensitive ? searchWord : searchWord.toLowerCase())
+      );
+      return highlight && isMatch ? (
+        <span
+          key={index}
+          className="bg-yellow-300 p-1 rounded-md"
+        >
+          {word}{' '}
+        </span>
+      ) : (
+        `${word} `
+      );
+    });
+  };
+
+  const handleMatch = () => {
+    try {
+      const parsedJson1 = JSON.parse(unescapeHTML(jsonData1.trim()));
+      const parsedJson2 = JSON.parse(unescapeHTML(jsonData2.trim()));
+
+      const flatJson1 = flattenJSON(parsedJson1);
+      const flatJson2 = flattenJSON(parsedJson2);
+
+      const indices1 = Object.keys(flatJson1)
+        .filter((key) => key.includes('index'))
+        .map((key) => key.split('.')[1]);
+      const indices2 = Object.keys(flatJson2)
+        .filter((key) => key.includes('index'))
+        .map((key) => key.split('.')[1]);
+
+      const allIndices = [...new Set([...indices1, ...indices2])];
+
+      const groupedOutput: Record<string, (string | JSX.Element)[]> = {};
+
+      allIndices.forEach((index) => {
+        groupedOutput[index] = [];
+
+        Object.entries(flatJson1).forEach(([key, value]) => {
+          if (key.includes(`.${index}.`) || (!key.includes('.index.') && index === 'default')) {
+            groupedOutput[index].push(
+              <div key={`json1-${key}`} className="mb-6">
+                <div className="text-lg font-semibold text-gray-700">{escapeHTML(key)}</div>
+                {key === 'url-info' || key === 'url' ? (
+                  <div className="text-blue-500">
+                    <a href={value} target="_blank" rel="noopener noreferrer" className="underline">
+                      {value}
+                    </a>
+                  </div>
+                ) : (
+                  <pre className="text-sm text-gray-600 whitespace-pre-wrap break-words">{matchWords(value, Object.values(flatJson2).flat())}</pre>
+                )}
+              </div>
+            );
+          }
+        });
+
+        Object.entries(flatJson2).forEach(([key, value]) => {
+          if (key.includes(`.${index}.`) || (!key.includes('.index.') && index === 'default')) {
+            groupedOutput[index].push(
+              <div key={`json2-${key}`} className="mb-6">
+                <div className="text-lg font-semibold text-gray-700">{escapeHTML(key)}</div>
+                {key === 'url-info' || key === 'url' ? (
+                  <div className="text-blue-500">
+                    <a href={value} target="_blank" rel="noopener noreferrer" className="underline">
+                      {value}
+                    </a>
+                  </div>
+                ) : (
+                  <pre className="text-sm text-gray-600 whitespace-pre-wrap break-words">{matchWords(value, Object.values(flatJson1).flat())}</pre>
+                )}
+              </div>
+            );
+          }
+        });
+      });
+
+      const finalOutput: (string | JSX.Element)[] = [];
+      Object.entries(groupedOutput).forEach(([groupKey, groupEntries], index) => {
+        finalOutput.push(
+          <div key={groupKey} className="mb-8">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Group {groupKey}</h2>
+            {groupEntries}
+          </div>
+        );
+        if (index < Object.keys(groupedOutput).length - 1) {
+          finalOutput.push(<div key={`spacer-${index}`} className="mb-8" />);
+        }
+      });
+
+      setOutput(finalOutput);
+      setError('');
+    } catch (e: any) {
+      setError(`Invalid JSON input: ${e.message}`);
+      setOutput([]);
+    }
+  };
 
   return (
-    <div className="max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-xl">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Highlight Matching Text</h1>
+    <div className="max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-lg">
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">Highlight Matching Text</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <textarea
-          className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 transition duration-200"
+          className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition duration-200"
           placeholder="Enter JSON Data 1"
           value={jsonData1}
           onChange={(e) => setJsonData1(e.target.value)}
         />
         <textarea
-          className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 transition duration-200"
+          className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition duration-200"
           placeholder="Enter JSON Data 2"
           value={jsonData2}
           onChange={(e) => setJsonData2(e.target.value)}
@@ -61,15 +167,7 @@ const HighlightMatchingText: React.FC = () => {
       )}
 
       <div className="mt-8">
-        {/* Modify the <pre> tag to wrap text */}
-        <div
-          style={{
-            wordWrap: 'break-word',
-            whiteSpace: 'normal',
-          }}
-        >
-          {output}
-        </div>
+        {output}
       </div>
     </div>
   );
