@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-// Utility function to escape HTML characters
+// Utility functions
 const escapeHTML = (str: string): string =>
   str.replace(/[&<>"']/g, (char) => {
     const escapeMap: Record<string, string> = {
@@ -13,6 +13,9 @@ const escapeHTML = (str: string): string =>
     return escapeMap[char] || char;
   });
 
+const unescapeHTML = (str: string): string =>
+  str.replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+
 // Component
 const HighlightMatchingText: React.FC = () => {
   const [jsonData1, setJsonData1] = useState<string>('');
@@ -21,13 +24,28 @@ const HighlightMatchingText: React.FC = () => {
   const [error, setError] = useState<string>('');
 
   const handleMatch = () => {
+    setError(''); // Clear any previous errors
+
     try {
-      // Parse and validate JSON input without unescaping HTML
-      const parsedJson1 = JSON.parse(jsonData1.trim());
-      const parsedJson2 = JSON.parse(jsonData2.trim());
+      // Parse and validate JSON input with more specific error handling
+      let parsedJson1;
+      try {
+        parsedJson1 = JSON.parse(unescapeHTML(jsonData1.trim()));
+      } catch (e) {
+        setError(`Invalid JSON in Data 1: ${e.message}`);
+        return; 
+      }
+
+      let parsedJson2;
+      try {
+        parsedJson2 = JSON.parse(unescapeHTML(jsonData2.trim()));
+      } catch (e) {
+        setError(`Invalid JSON in Data 2: ${e.message}`);
+        return;
+      }
 
       // Create a map to organize the data by index
-      const dataByIndex: Map<string, any> = new Map();
+      const dataByIndex = new Map();
 
       const organizeData = (json: any[], fileKey: string) => {
         json.forEach((item) => {
@@ -91,10 +109,9 @@ const HighlightMatchingText: React.FC = () => {
       ));
 
       setOutput(outputElements);
-      setError('');
     } catch (e: any) {
-      // Handle invalid JSON errors
-      setError(`Invalid JSON input: ${e.message}`);
+      // Handle any other unexpected errors
+      setError(`An error occurred: ${e.message}`);
       setOutput([]);
     }
   };
