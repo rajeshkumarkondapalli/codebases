@@ -5,6 +5,7 @@ const HighlightMatchingText: React.FC = () => {
   const [jsonData2, setJsonData2] = useState<string>('');
   const [output, setOutput] = useState<string>('');
   const [error, setError] = useState<string>('');
+  const [highlight, setHighlight] = useState<boolean>(false); // State to manage highlight option
 
   // Escape special characters for safe rendering
   const escapeHTML = (str: string) => {
@@ -35,11 +36,20 @@ const HighlightMatchingText: React.FC = () => {
     return result;
   };
 
-  // Highlight words found in the second JSON data in the first JSON data
-  const highlightWords = (text: string, searchWords: string[]) => {
+  // Highlight words from JSON 2 in the values of JSON 1 (if highlight is true)
+  const matchWords = (text: string, searchWords: string[]) => {
+    if (!highlight) {
+      return escapeHTML(text)
+        .split(' ')
+        .map((word, index) => {
+          return <span key={index}>{word} </span>; // Just return the word without highlighting
+        });
+    }
+
     return escapeHTML(text)
       .split(' ')
       .map((word, index) => {
+        // Highlight matched words in yellow
         const isMatch = searchWords.includes(word);
         return isMatch ? (
           <span
@@ -74,10 +84,10 @@ const HighlightMatchingText: React.FC = () => {
 
       let result = '';
 
-      // Go through each value in the first JSON and highlight matching words
+      // Go through each value in the first JSON and show matching words (with/without highlighting)
       Object.values(flatJson1).forEach((value, index) => {
-        const highlightedText = highlightWords(value, wordsToMatch);
-        result += `<p key=${index}>${highlightedText}</p>`;
+        const matchedText = matchWords(value, wordsToMatch);
+        result += `<p key=${index}>${matchedText}</p>`;
       });
 
       setOutput(result);
@@ -115,6 +125,20 @@ const HighlightMatchingText: React.FC = () => {
             className="w-full h-48 p-3 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
+      </div>
+
+      {/* Highlight Toggle */}
+      <div className="flex items-center justify-center mb-6">
+        <input
+          type="checkbox"
+          checked={highlight}
+          onChange={() => setHighlight(!highlight)}
+          id="highlight-toggle"
+          className="mr-2"
+        />
+        <label htmlFor="highlight-toggle" className="text-sm text-gray-700">
+          Highlight matched words
+        </label>
       </div>
 
       {/* Error Message */}
