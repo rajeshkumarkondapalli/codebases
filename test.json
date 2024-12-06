@@ -1,0 +1,41 @@
+{
+  "input": {
+    "request-id": "e04b694d-1579-44dc-9f19-b9361187ae91",
+    "circuit-segments": [
+      {
+        "circuit-name": "evc-hbh-inter",
+        "circuit-segment-suffix": "-A",
+        "device-name": "CN3948AAC-71103",
+        "circuit-type": "ELINE",
+        "action": "CREATE",
+        "description": "Inter-Region Customer EVC segment created by...", 
+        "template-name": "ELINE_CUSTOMER",
+        "cir": 1000,
+        "cos": "PD",
+        "use-case": "GENERIC",
+        "oam": {
+          "mep-id": 1,
+          "remote-mep-id": 2
+        },
+        "y1731-probe": "GENERATOR",
+        "end-points": [
+          {
+            "interface-name": "0/0/2",
+            "end-point-type": "AEND",
+            "end-point-role": "UNI",
+            "frame-format": "TAGGED",
+            "vlans": "734" 
+          },
+          {
+            "end-point-type": "ZEND",
+            "end-point-role": "PWE",
+            "pw-id": 1000000001,
+            "peer-ip": "10.0.71.72",
+            "asn": 123,
+            "peer-asn": 456
+          }
+        ]
+      }
+    ]
+  }
+}
