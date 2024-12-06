@@ -69,7 +69,7 @@ const HighlightMatchingText: React.FC = () => {
       const flatJson1 = flattenJSON(parsedJson1);
       const flatJson2 = flattenJSON(parsedJson2);
 
-      // Filter fields
+      // Filter fields (only relevant fields)
       const allowedFields = ['raw-response', 'url-info', 'payload', 'index', 'url', 'api-record'];
       const filteredJson1 = Object.fromEntries(
         Object.entries(flatJson1).filter(([key]) =>
@@ -90,31 +90,44 @@ const HighlightMatchingText: React.FC = () => {
         ? searchWords
         : searchWords.map((word) => word.toLowerCase());
 
-      // Group entries by 'index' value
+      // Group entries properly: `index` and `api-record` should be handled in their own group.
       const groupedOutput: Record<string, (string | JSX.Element)[]> = {};
 
       Object.entries(filteredJson1).forEach(([key, value], index) => {
-        // Use a group index starting from 1
-        const groupKey = key.includes('index') ? key.split('.')[0] : `Group ${Math.floor(index / 5) + 1}`;
-
-        if (!groupedOutput[groupKey]) {
-          groupedOutput[groupKey] = [];
-        }
-
-        groupedOutput[groupKey].push(
-          <div key={index} className="mb-6">
-            <div className="font-medium text-lg text-indigo-600">{escapeHTML(key)}</div>
-            {key === 'url-info' || key === 'url' ? (
-              <div className="text-blue-500">
-                <a href={value} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                  {value}
-                </a>
-              </div>
-            ) : (
+        // Handle 'index' and 'api-record' separately
+        if (key.includes('index') || key.includes('api-record')) {
+          // Place them in a specific group
+          const groupKey = key.includes('index') ? 'Index Group' : 'API Record Group';
+          if (!groupedOutput[groupKey]) {
+            groupedOutput[groupKey] = [];
+          }
+          groupedOutput[groupKey].push(
+            <div key={index} className="mb-6">
+              <div className="font-medium text-lg text-indigo-600">{escapeHTML(key)}</div>
               <pre className="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm">{matchWords(value, processedSearchWords)}</pre>
-            )}
-          </div>
-        );
+            </div>
+          );
+        } else {
+          // Group other fields based on parent grouping
+          const groupKey = key.split('.')[0]; // Parent grouping by the first part of the key (before '.')
+          if (!groupedOutput[groupKey]) {
+            groupedOutput[groupKey] = [];
+          }
+          groupedOutput[groupKey].push(
+            <div key={index} className="mb-6">
+              <div className="font-medium text-lg text-indigo-600">{escapeHTML(key)}</div>
+              {key === 'url-info' || key === 'url' ? (
+                <div className="text-blue-500">
+                  <a href={value} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                    {value}
+                  </a>
+                </div>
+              ) : (
+                <pre className="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm">{matchWords(value, processedSearchWords)}</pre>
+              )}
+            </div>
+          );
+        }
       });
 
       // Flatten the grouped output with spacing
@@ -195,17 +208,8 @@ const HighlightMatchingText: React.FC = () => {
       </button>
 
       <div className="mt-8">
-        {error ? (
-          <p className="text-red-600 font-semibold">{error}</p>
-        ) : (
-          <div className="bg-white p-6 border border-gray-200 rounded-lg shadow-sm">
-            {output.length > 0 ? (
-              <div>{output}</div>
-            ) : (
-              <p className="text-gray-500">No output to display</p>
-            )}
-          </div>
-        )}
+        {error && <div className="text-red-500">{error}</div>}
+        <div>{output}</div>
       </div>
     </div>
   );
