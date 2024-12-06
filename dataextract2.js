@@ -45,8 +45,6 @@ const HighlightMatchingText: React.FC = () => {
           key={index}
           style={{
             backgroundColor: 'yellow',
-            fontWeight: 'bold',
-            color: 'black',
             padding: '0 2px',
             borderRadius: '3px',
           }}
@@ -75,12 +73,8 @@ const HighlightMatchingText: React.FC = () => {
       const matchedOutput: (string | JSX.Element)[] = [];
       Object.entries(flatJson1).forEach(([key, value], index) => {
         const matchedText = matchWords(value, wordsToMatch);
-        matchedOutput.push(
-          <span key={`${index}-key`} style={{ fontWeight: 'bold' }}>
-            {escapeHTML(key)}:
-          </span>
-        );
-        matchedOutput.push(' ', ...matchedText, <br key={`${index}-break`} />);
+        matchedOutput.push(`${escapeHTML(key)}: `);
+        matchedOutput.push(...matchedText, <br key={`${index}-break`} />);
       });
 
       setOutput(matchedOutput);
