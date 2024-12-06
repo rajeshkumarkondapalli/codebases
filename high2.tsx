@@ -26,6 +26,21 @@ const HighlightMatchingText: React.FC = () => {
     }
   };
 
+  // Function to escape HTML/XML special characters
+  const escapeHTML = (str: string) => {
+    return str.replace(/[&<>"'/]/g, (match) => {
+      const escapeMap: Record<string, string> = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+        '/': '&#47;',
+      };
+      return escapeMap[match] || match;
+    });
+  };
+
   // Function to find matching texts between the two JSON data
   const findMatches = () => {
     const matches: string[] = [];
@@ -43,9 +58,9 @@ const HighlightMatchingText: React.FC = () => {
   const highlightText = (text: string) => {
     return text.split(' ').map((word, index) => {
       if (matchedText.includes(word)) {
-        return <span key={index} style={{ backgroundColor: 'yellow' }}>{word} </span>;
+        return <span key={index} style={{ backgroundColor: 'yellow' }}>{escapeHTML(word)} </span>;
       }
-      return word + ' ';
+      return escapeHTML(word) + ' ';
     });
   };
 
