@@ -45,14 +45,19 @@ const HighlightMatchingText: React.FC = () => {
       }
 
       // Create a map to organize the data by index
-      const dataByIndex = new Map();
+      const dataByIndex = new Map<string, { file1: any; file2: any }>();
 
       const organizeData = (json: any[], fileKey: string) => {
         json.forEach((item) => {
           const { index, url, 'url-info': urlInfo, payload, 'raw-response': rawResponse } = item;
+          if (index == null || url == null || urlInfo == null || payload == null || rawResponse == null) {
+            return; // Skip incomplete data entries
+          }
+
           if (!dataByIndex.has(index)) {
             dataByIndex.set(index, { file1: {}, file2: {} });
           }
+
           const data = dataByIndex.get(index);
           if (fileKey === 'file1') {
             data.file1 = { url, 'url-info': urlInfo, payload, 'raw-response': rawResponse };
