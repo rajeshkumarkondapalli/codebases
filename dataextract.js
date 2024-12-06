@@ -90,17 +90,17 @@ const HighlightMatchingText: React.FC = () => {
         ? searchWords
         : searchWords.map((word) => word.toLowerCase());
 
-      // Group entries by 'api-record'
+      // Group entries by 'index' value
       const groupedOutput: Record<string, (string | JSX.Element)[]> = {};
 
       Object.entries(filteredJson1).forEach(([key, value], index) => {
-        const apiRecord = key.includes('api-record') ? key.split('.')[0] : 'default';
-        if (!groupedOutput[apiRecord]) {
-          groupedOutput[apiRecord] = [];
+        const groupKey = key.includes('index') ? key.split('.')[0] : `Group ${Math.floor(index / 5) + 1}`;
+        if (!groupedOutput[groupKey]) {
+          groupedOutput[groupKey] = [];
         }
 
-        groupedOutput[apiRecord].push(
-          <div key={index} className="mb-6 border p-4 rounded-lg shadow-md">
+        groupedOutput[groupKey].push(
+          <div key={index} className="mb-6">
             <div className="font-medium text-lg text-indigo-600">{escapeHTML(key)}</div>
             {key === 'url-info' || key === 'url' ? (
               <div className="text-blue-500">
