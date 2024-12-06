@@ -3,11 +3,10 @@ import { useState } from 'react';
 const HighlightMatchingText: React.FC = () => {
   const [jsonData1, setJsonData1] = useState<string>('');
   const [jsonData2, setJsonData2] = useState<string>('');
-  const [output, setOutput] = useState<string>('');
+  const [output, setOutput] = useState<(string | JSX.Element)[]>([]);
   const [error, setError] = useState<string>('');
-  const [highlight, setHighlight] = useState<boolean>(false); // State to manage highlight option
+  const [highlight, setHighlight] = useState<boolean>(false); 
 
-  // Escape special characters for safe rendering
   const escapeHTML = (str: string) => {
     return str.replace(/[&<>"']/g, (char) => {
       const escapeMap: Record<string, string> = {
@@ -21,73 +20,69 @@ const HighlightMatchingText: React.FC = () => {
     });
   };
 
-  // Recursively flatten JSON into key-value pairs
   const flattenJSON = (data: any, prefix = ''): Record<string, string> => {
     let result: Record<string, string> = {};
-
     for (const key in data) {
       if (data[key] !== null && typeof data[key] === 'object') {
         result = { ...result, ...flattenJSON(data[key], `${prefix}${key}.`) };
       } else {
-        result[`${prefix}${key}`] = String(data[key]); // Convert to string for consistency
+        result[`${prefix}${key}`] = String(data[key]); 
       }
     }
-
     return result;
   };
 
-  // Match words from JSON 2 in the values of JSON 1 (if highlight is true)
   const matchWords = (text: string, searchWords: string[]) => {
     const words = escapeHTML(text).split(' ');
+    const output: (string | JSX.Element)[] = []; 
 
-    return words.map((word, index) => {
-      // Check if word is a match
+    words.forEach((word, index) => {
       const isMatch = searchWords.some((searchWord) => word.includes(searchWord));
-      return highlight && isMatch ? (
-        <span
-          key={index}
-          style={{
-            backgroundColor: 'yellow',
-            fontWeight: 'bold',
-            color: 'black',
-            padding: '0 2px',
-            borderRadius: '3px',
-          }}
-        >
-          {word}{' '}
-        </span>
-      ) : (
-        <span key={index}>{word} </span>
-      );
+      if (highlight && isMatch) {
+        output.push(
+          <span
+            key={index}
+            style={{
+              backgroundColor: 'yellow',
+              fontWeight: 'bold',
+              color: 'black',
+              padding: '0 2px',
+              borderRadius: '3px',
+            }}
+          >
+            {word} 
+          </span>
+        );
+      } else {
+        output.push(<span key={index}>{word} </span>);
+      }
     });
+
+    return output; 
   };
 
   const handleMatch = () => {
     try {
-      // Parse and flatten both JSON inputs
-      const parsedJson1 = JSON.parse(jsonData1.trim()); // Trim to avoid whitespace issues
+      const parsedJson1 = JSON.parse(jsonData1.trim()); 
       const parsedJson2 = JSON.parse(jsonData2.trim());
 
       const flatJson1 = flattenJSON(parsedJson1);
       const flatJson2 = flattenJSON(parsedJson2);
 
-      // Extract words from JSON data for matching
-      const wordsToMatch = Object.values(flatJson2).join(' ').split(' '); // Create an array of words from JSON 2
+      const wordsToMatch = Object.values(flatJson2).join(' ').split(' '); 
 
-      let result = '';
+      let result: (string | JSX.Element)[] = []; 
 
-      // Go through each value in the first JSON and show matching words (with/without highlighting)
-      Object.values(flatJson1).forEach((value, index) => {
+      Object.values(flatJson1).forEach((value) => {
         const matchedText = matchWords(value, wordsToMatch);
-        result += matchedText;
+        result = result.concat(matchedText); 
       });
 
-      // Ensure that we convert the result to plain text
-      setOutput(result);
+      setOutput(result); 
       setError('');
     } catch (e) {
       setError('Invalid JSON input. Please provide properly formatted JSON.');
-      setOutput('');
+      setOutput([]);
     }
   };
 
@@ -97,7 +92,6 @@ const HighlightMatchingText: React.FC = () => {
         Generic JSON Matching Tool
       </h1>
 
-      {/* Input Fields */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div>
           <h2 className="text-lg font-semibold text-gray-700">JSON Data 1</h2>
@@ -120,7 +114,6 @@ const HighlightMatchingText: React.FC = () => {
         </div>
       </div>
 
-      {/* Highlight Toggle */}
       <div className="flex items-center justify-center mb-6">
         <input
           type="checkbox"
@@ -134,10 +127,8 @@ const HighlightMatchingText: React.FC = () => {
         </label>
       </div>
 
-      {/* Error Message */}
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
-      {/* Match Button */}
       <div className="text-center mb-6">
         <button
           onClick={handleMatch}
@@ -147,12 +138,12 @@ const HighlightMatchingText: React.FC = () => {
         </button>
       </div>
 
-      {/* Display Result */}
       <div className="bg-white p-4 rounded-lg shadow-md">
         <h2 className="text-lg font-semibold text-gray-700">Output</h2>
         <div className="mt-2">
-          {/* Display the result directly as text */}
-          <pre>{output}</pre>
+          {output.map((item, index) => (
+            <React.Fragment key={index}>{item}</React.Fragment>
+          ))}
         </div>
       </div>
     </div>
