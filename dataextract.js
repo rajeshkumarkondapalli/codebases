@@ -36,38 +36,30 @@ const HighlightMatchingText: React.FC = () => {
     return result;
   };
 
-  // Highlight words from JSON 2 in the values of JSON 1 (if highlight is true)
+  // Match words from JSON 2 in the values of JSON 1 (if highlight is true)
   const matchWords = (text: string, searchWords: string[]) => {
-    if (!highlight) {
-      return escapeHTML(text)
-        .split(' ')
-        .map((word, index) => {
-          return <span key={index}>{word} </span>; // Just return the word without highlighting
-        });
-    }
+    const words = escapeHTML(text).split(' ');
 
-    return escapeHTML(text)
-      .split(' ')
-      .map((word, index) => {
-        // Highlight matched words in yellow
-        const isMatch = searchWords.includes(word);
-        return isMatch ? (
-          <span
-            key={index}
-            style={{
-              backgroundColor: 'yellow',
-              fontWeight: 'bold',
-              color: 'black',
-              padding: '0 2px',
-              borderRadius: '3px',
-            }}
-          >
-            {word}{' '}
-          </span>
-        ) : (
-          <span key={index}>{word} </span>
-        );
-      });
+    return words.map((word, index) => {
+      // Check if word is a match
+      const isMatch = searchWords.some((searchWord) => word.includes(searchWord));
+      return highlight && isMatch ? (
+        <span
+          key={index}
+          style={{
+            backgroundColor: 'yellow',
+            fontWeight: 'bold',
+            color: 'black',
+            padding: '0 2px',
+            borderRadius: '3px',
+          }}
+        >
+          {word}{' '}
+        </span>
+      ) : (
+        <span key={index}>{word} </span>
+      );
+    });
   };
 
   const handleMatch = () => {
@@ -87,7 +79,7 @@ const HighlightMatchingText: React.FC = () => {
       // Go through each value in the first JSON and show matching words (with/without highlighting)
       Object.values(flatJson1).forEach((value, index) => {
         const matchedText = matchWords(value, wordsToMatch);
-        result += `<p key=${index}>${matchedText}</p>`;
+        result += matchedText;
       });
 
       setOutput(result);
@@ -157,7 +149,10 @@ const HighlightMatchingText: React.FC = () => {
       {/* Display Result */}
       <div className="bg-white p-4 rounded-lg shadow-md">
         <h2 className="text-lg font-semibold text-gray-700">Output</h2>
-        <div className="mt-2" dangerouslySetInnerHTML={{ __html: output }} />
+        <div className="mt-2">
+          {/* Display the result directly as text */}
+          <pre>{output}</pre>
+        </div>
       </div>
     </div>
   );
