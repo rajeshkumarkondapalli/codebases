@@ -90,13 +90,21 @@ const HighlightMatchingText: React.FC = () => {
         ? searchWords
         : searchWords.map((word) => word.toLowerCase());
 
-      // Generate output
+      // Generate output with URL
       const matchedOutput: (string | JSX.Element)[] = [];
       Object.entries(filteredJson1).forEach(([key, value], index) => {
         matchedOutput.push(
           <div key={index} className="mb-4">
             <p className="font-bold text-blue-600">{escapeHTML(key)}</p>
-            <pre className="bg-gray-100 p-2 rounded-lg border">{matchWords(value, processedSearchWords)}</pre>
+            {key === 'url-info' ? (
+              <p className="text-blue-500">
+                <a href={value} target="_blank" rel="noopener noreferrer">
+                  {value}
+                </a>
+              </p>
+            ) : (
+              <pre className="bg-gray-100 p-2 rounded-lg border">{matchWords(value, processedSearchWords)}</pre>
+            )}
           </div>
         );
       });
