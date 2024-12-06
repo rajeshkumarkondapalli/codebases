@@ -101,6 +101,8 @@ const HighlightMatchingText: React.FC = () => {
         }
       });
 
+      console.log("Grouped Output:", groupedOutput); // Debugging the grouped output
+
       const finalOutput: (string | JSX.Element)[] = [];
       Object.entries(groupedOutput).forEach(([apiRecordName, indices]) => {
         finalOutput.push(
@@ -126,6 +128,7 @@ const HighlightMatchingText: React.FC = () => {
       setOutput(finalOutput);
       setError('');
     } catch (e: any) {
+      console.error(e); // Debugging the error
       setError(`Invalid JSON input: ${e.message}`);
       setOutput([]);
     }
@@ -187,7 +190,13 @@ const HighlightMatchingText: React.FC = () => {
         </div>
       )}
 
-      <div className="output">{output}</div>
+      <div className="output">
+        {output.length > 0 ? (
+          output
+        ) : (
+          <div className="text-gray-500">No matching data found or no valid input.</div>
+        )}
+      </div>
     </div>
   );
 };
