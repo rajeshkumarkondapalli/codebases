@@ -93,18 +93,61 @@ const HighlightMatchingText: React.FC = () => {
       // Group entries properly: `index` and `api-record` should be handled in their own group.
       const groupedOutput: Record<string, (string | JSX.Element)[]> = {};
 
+      // Helper function to find and return the properties for an index
+      const findIndexProperties = (index: string) => {
+        const propertiesFromJson1 = Object.entries(filteredJson1).filter(([key]) =>
+          key.includes(`index.${index}`)
+        );
+        const propertiesFromJson2 = Object.entries(filteredJson2).filter(([key]) =>
+          key.includes(`index.${index}`)
+        );
+
+        return { propertiesFromJson1, propertiesFromJson2 };
+      };
+
       Object.entries(filteredJson1).forEach(([key, value], index) => {
         // Handle 'index' and 'api-record' separately
         if (key.includes('index') || key.includes('api-record')) {
-          // Place them in a specific group
           const groupKey = key.includes('index') ? 'Index Group' : 'API Record Group';
           if (!groupedOutput[groupKey]) {
             groupedOutput[groupKey] = [];
           }
+
+          // Extract index from the key
+          const indexValue = key.split('.')[1];
+
+          // Find associated properties for the index in both JSONs
+          const { propertiesFromJson1, propertiesFromJson2 } = findIndexProperties(indexValue);
+
+          // Add the index-related properties to the group
           groupedOutput[groupKey].push(
             <div key={index} className="mb-6">
               <div className="font-medium text-lg text-indigo-600">{escapeHTML(key)}</div>
-              <pre className="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm">{matchWords(value, processedSearchWords)}</pre>
+              <pre className="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm">
+                {matchWords(value, processedSearchWords)}
+              </pre>
+
+              <div className="mt-4">
+                <div className="font-medium text-lg">Properties for Index {indexValue}</div>
+                <div className="mt-2">
+                  <h3 className="text-sm font-medium text-gray-600">JSON 1:</h3>
+                  <pre className="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm">
+                    {propertiesFromJson1.map(([key, val]) => (
+                      <div key={key}>
+                        <strong>{key}:</strong> {val}
+                      </div>
+                    ))}
+                  </pre>
+                  <h3 className="text-sm font-medium text-gray-600 mt-2">JSON 2:</h3>
+                  <pre className="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm">
+                    {propertiesFromJson2.map(([key, val]) => (
+                      <div key={key}>
+                        <strong>{key}:</strong> {val}
+                      </div>
+                    ))}
+                  </pre>
+                </div>
+              </div>
             </div>
           );
         } else {
@@ -173,44 +216,44 @@ const HighlightMatchingText: React.FC = () => {
         />
       </div>
 
-      <div className="flex items-center justify-between mt-6">
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            checked={highlight}
-            onChange={() => setHighlight(!highlight)}
-            id="highlight-toggle"
-            className="mr-3 rounded-sm text-indigo-600 focus:ring-2 focus:ring-indigo-500"
-          />
-          <label htmlFor="highlight-toggle" className="text-sm text-gray-700">
-            Highlight matched words
+      <div className="flex justify-between items-center mt-6">
+        <button
+          onClick={handleMatch}
+          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-200"
+        >
+          Highlight
+        </button>
+
+        <div>
+          <label className="mr-4">
+            <input
+              type="checkbox"
+              checked={highlight}
+              onChange={(e) => setHighlight(e.target.checked)}
+              className="mr-2"
+            />
+            Highlight Matches
           </label>
-        </div>
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            checked={caseSensitive}
-            onChange={() => setCaseSensitive(!caseSensitive)}
-            id="case-sensitive-toggle"
-            className="mr-3 rounded-sm text-indigo-600 focus:ring-2 focus:ring-indigo-500"
-          />
-          <label htmlFor="case-sensitive-toggle" className="text-sm text-gray-700">
-            Case sensitive matching
+
+          <label>
+            <input
+              type="checkbox"
+              checked={caseSensitive}
+              onChange={(e) => setCaseSensitive(e.target.checked)}
+              className="mr-2"
+            />
+            Case Sensitive
           </label>
         </div>
       </div>
 
-      <button
-        onClick={handleMatch}
-        className="mt-6 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200"
-      >
-        Match
-      </button>
+      {error && (
+        <div className="mt-6 p-4 bg-red-100 border border-red-400 text-red-800 rounded-lg">
+          <strong>Error:</strong> {error}
+        </div>
+      )}
 
-      <div className="mt-8">
-        {error && <div className="text-red-500">{error}</div>}
-        <div>{output}</div>
-      </div>
+      <div className="mt-6">{output}</div>
     </div>
   );
 };
