@@ -68,7 +68,20 @@ const HighlightMatchingText: React.FC = () => {
       const flatJson1 = flattenJSON(parsedJson1);
       const flatJson2 = flattenJSON(parsedJson2);
 
-      const searchWords = Object.values(flatJson2)
+      // Filter only the required fields
+      const allowedFields = ['raw-response', 'url-info', 'payload', 'index'];
+      const filteredJson1 = Object.fromEntries(
+        Object.entries(flatJson1).filter(([key]) =>
+          allowedFields.some((field) => key.endsWith(field))
+        )
+      );
+      const filteredJson2 = Object.fromEntries(
+        Object.entries(flatJson2).filter(([key]) =>
+          allowedFields.some((field) => key.endsWith(field))
+        )
+      );
+
+      const searchWords = Object.values(filteredJson2)
         .flatMap((value) => value.split(' '))
         .filter((word) => word);
 
@@ -77,7 +90,7 @@ const HighlightMatchingText: React.FC = () => {
         : searchWords.map((word) => word.toLowerCase());
 
       const matchedOutput: (string | JSX.Element)[] = [];
-      Object.entries(flatJson1).forEach(([key, value], index) => {
+      Object.entries(filteredJson1).forEach(([key, value], index) => {
         matchedOutput.push(`${escapeHTML(key)}: `);
         matchedOutput.push(...matchWords(value, processedSearchWords), <br key={`${index}-break`} />);
       });
