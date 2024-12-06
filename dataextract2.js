@@ -93,15 +93,7 @@ const HighlightMatchingText: React.FC = () => {
             groupedOutput[index].push(
               <div key={`json1-${key}`} className="mb-6">
                 <div className="font-medium text-lg text-indigo-600">{escapeHTML(key)}</div>
-                {key === 'url-info' || key === 'url' ? (
-                  <div className="text-blue-500">
-                    <a href={value} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                      {value}
-                    </a>
-                  </div>
-                ) : (
-                  <pre className="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm">{matchWords(value, Object.values(flatJson2).flat())}</pre>
-                )}
+                <pre className="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm">{matchWords(value, Object.values(flatJson2).flat())}</pre>
               </div>
             );
           }
@@ -113,15 +105,7 @@ const HighlightMatchingText: React.FC = () => {
             groupedOutput[index].push(
               <div key={`json2-${key}`} className="mb-6">
                 <div className="font-medium text-lg text-indigo-600">{escapeHTML(key)}</div>
-                {key === 'url-info' || key === 'url' ? (
-                  <div className="text-blue-500">
-                    <a href={value} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                      {value}
-                    </a>
-                  </div>
-                ) : (
-                  <pre className="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm">{matchWords(value, Object.values(flatJson1).flat())}</pre>
-                )}
+                <pre className="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm">{matchWords(value, Object.values(flatJson1).flat())}</pre>
               </div>
             );
           }
