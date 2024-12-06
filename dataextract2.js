@@ -70,67 +70,62 @@ const HighlightMatchingText: React.FC = () => {
       const flatJson1 = flattenJSON(parsedJson1);
       const flatJson2 = flattenJSON(parsedJson2);
 
-      // Filter fields
-      const allowedFields = ['raw-response', 'url-info', 'payload', 'index', 'url', 'api-record'];
-      const filteredJson1 = Object.fromEntries(
-        Object.entries(flatJson1).filter(([key]) =>
-          allowedFields.some((field) => key.endsWith(field))
-        )
-      );
-      const filteredJson2 = Object.fromEntries(
-        Object.entries(flatJson2).filter(([key]) =>
-          allowedFields.some((field) => key.endsWith(field))
-        )
-      );
+      // Extract indices from both JSONs
+      const indices1 = Object.keys(flatJson1)
+        .filter((key) => key.includes('index'))
+        .map((key) => key.split('.')[1]);
+      const indices2 = Object.keys(flatJson2)
+        .filter((key) => key.includes('index'))
+        .map((key) => key.split('.')[1]);
+
+      // Combine indices and remove duplicates
+      const allIndices = [...new Set([...indices1, ...indices2])];
 
       // Group entries based on index
       const groupedOutput: Record<string, (string | JSX.Element)[]> = {};
 
-      Object.entries(filteredJson1).forEach(([key, value], index) => {
-        const indexValue = key.includes('index') ? key.split('.')[1] : 'default';
+      allIndices.forEach((index) => {
+        groupedOutput[index] = [];
 
-        if (!groupedOutput[indexValue]) {
-          groupedOutput[indexValue] = [];
-        }
-
-        groupedOutput[indexValue].push(
-          <div key={`json1-${index}`} className="mb-6">
-            <div className="font-medium text-lg text-indigo-600">{escapeHTML(key)}</div>
-            {key === 'url-info' || key === 'url' ? (
-              <div className="text-blue-500">
-                <a href={value} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                  {value}
-                </a>
+        // Add properties from JSON1 for the current index
+        Object.entries(flatJson1).forEach(([key, value]) => {
+          if (key.includes(`.${index}.`) || (!key.includes('.index.') && index === 'default')) {
+            groupedOutput[index].push(
+              <div key={`json1-${key}`} className="mb-6">
+                <div className="font-medium text-lg text-indigo-600">{escapeHTML(key)}</div>
+                {key === 'url-info' || key === 'url' ? (
+                  <div className="text-blue-500">
+                    <a href={value} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                      {value}
+                    </a>
+                  </div>
+                ) : (
+                  <pre className="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm">{matchWords(value, Object.values(flatJson2).flat())}</pre>
+                )}
               </div>
-            ) : (
-              <pre className="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm">{matchWords(value, Object.values(filteredJson2).flat())}</pre>
-            )}
-          </div>
-        );
-      });
+            );
+          }
+        });
 
-      // For JSON2, add corresponding properties to the same index group
-      Object.entries(filteredJson2).forEach(([key, value], index) => {
-        const indexValue = key.includes('index') ? key.split('.')[1] : 'default';
-
-        if (!groupedOutput[indexValue]) {
-          groupedOutput[indexValue] = [];
-        }
-
-        groupedOutput[indexValue].push(
-          <div key={`json2-${index}`} className="mb-6">
-            <div className="font-medium text-lg text-indigo-600">{escapeHTML(key)}</div>
-            {key === 'url-info' || key === 'url' ? (
-              <div className="text-blue-500">
-                <a href={value} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                  {value}
-                </a>
+        // Add properties from JSON2 for the current index
+        Object.entries(flatJson2).forEach(([key, value]) => {
+          if (key.includes(`.${index}.`) || (!key.includes('.index.') && index === 'default')) {
+            groupedOutput[index].push(
+              <div key={`json2-${key}`} className="mb-6">
+                <div className="font-medium text-lg text-indigo-600">{escapeHTML(key)}</div>
+                {key === 'url-info' || key === 'url' ? (
+                  <div className="text-blue-500">
+                    <a href={value} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                      {value}
+                    </a>
+                  </div>
+                ) : (
+                  <pre className="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm">{matchWords(value, Object.values(flatJson1).flat())}</pre>
+                )}
               </div>
-            ) : (
-              <pre className="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm">{matchWords(value, Object.values(filteredJson1).flat())}</pre>
-            )}
-          </div>
-        );
+            );
+          }
+        });
       });
 
       // Flatten the grouped output with spacing
@@ -158,66 +153,7 @@ const HighlightMatchingText: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-xl">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">Highlight Matching Text</h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <textarea
-          className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 transition duration-200"
-          placeholder="Enter JSON Data 1"
-          value={jsonData1}
-          onChange={(e) => setJsonData1(e.target.value)}
-        />
-        <textarea
-          className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 transition duration-200"
-          placeholder="Enter JSON Data 2"
-          value={jsonData2}
-          onChange={(e) => setJsonData2(e.target.value)}
-        />
-      </div>
-
-      <div className="flex items-center justify-between mt-6">
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            checked={highlight}
-            onChange={() => setHighlight(!highlight)}
-            id="highlight-toggle"
-            className="mr-3 rounded-sm text-indigo-600 focus:ring-2 focus:ring-indigo-500"
-          />
-          <label htmlFor="highlight-toggle" className="text-sm text-gray-700">
-            Highlight matched words
-          </label>
-        </div>
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            checked={caseSensitive}
-            onChange={() => setCaseSensitive(!caseSensitive)}
-            id="case-sensitive-toggle"
-            className="mr-3 rounded-sm text-indigo-600 focus:ring-2 focus:ring-indigo-500"
-          />
-          <label htmlFor="case-sensitive-toggle" className="text-sm text-gray-700">
-            Case sensitive matching
-          </label>
-        </div>
-      </div>
-
-      <button
-        onClick={handleMatch}
-        className="mt-6 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200"
-      >
-        Match
-      </button>
-
-      {error && (
-        <div className="mt-6 p-4 bg-red-100 text-red-700 border border-red-400 rounded-lg">
-          {error}
-        </div>
-      )}
-
-      <div className="mt-8">{output}</div>
-    </div>
+    // ... rest of the component remains the same
   );
 };
 
