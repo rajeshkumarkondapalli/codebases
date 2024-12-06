@@ -94,7 +94,7 @@ const HighlightMatchingText: React.FC = () => {
       const groupedOutput: Record<string, (string | JSX.Element)[]> = {};
 
       Object.entries(filteredJson1).forEach(([key, value], index) => {
-        const apiRecord = key.includes('api-record') ? key.split('.')[0] : 'default'; // Group by api-record or default
+        const apiRecord = key.includes('api-record') ? key.split('.')[0] : 'default';
         if (!groupedOutput[apiRecord]) {
           groupedOutput[apiRecord] = [];
         }
@@ -115,21 +115,25 @@ const HighlightMatchingText: React.FC = () => {
         );
       });
 
-      // Flatten the grouped output
+      // Flatten the grouped output with spacing
       const finalOutput: (string | JSX.Element)[] = [];
-      Object.entries(groupedOutput).forEach(([groupKey, groupEntries]) => {
+      Object.entries(groupedOutput).forEach(([groupKey, groupEntries], index) => {
         finalOutput.push(
           <div key={groupKey} className="mb-8">
             <h2 className="text-xl font-bold text-gray-800 mb-4">{groupKey}</h2>
             {groupEntries}
           </div>
         );
+
+        // Add spacing between groups (except after the last group)
+        if (index < Object.keys(groupedOutput).length - 1) {
+          finalOutput.push(<div key={`spacer-${index}`} className="mb-8" />);
+        }
       });
 
       setOutput(finalOutput);
       setError('');
     } catch (e: any) {
-      // Handle errors
       setError(`Invalid JSON input: ${e.message}`);
       setOutput([]);
     }
@@ -138,8 +142,7 @@ const HighlightMatchingText: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-xl">
       <h1 className="text-2xl font-bold text-gray-800 mb-6">Highlight Matching Text</h1>
-      
-      {/* Input Section */}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <textarea
           className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 transition duration-200"
@@ -155,7 +158,6 @@ const HighlightMatchingText: React.FC = () => {
         />
       </div>
 
-      {/* Checkboxes for settings */}
       <div className="flex items-center justify-between mt-6">
         <div className="flex items-center">
           <input
@@ -183,7 +185,6 @@ const HighlightMatchingText: React.FC = () => {
         </div>
       </div>
 
-      {/* Match Button */}
       <button
         onClick={handleMatch}
         className="mt-6 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200"
@@ -191,7 +192,6 @@ const HighlightMatchingText: React.FC = () => {
         Match
       </button>
 
-      {/* Output Section */}
       <div className="mt-8">
         {error ? (
           <p className="text-red-600 font-semibold">{error}</p>
