@@ -30,7 +30,7 @@ const HighlightMatchingText: React.FC = () => {
       const parsedJson2 = JSON.parse(unescapeHTML(jsonData2.trim()));
 
       // Create a map to organize the data by index
-      const dataByIndex: Map<string, any> = new Map();
+      const dataByIndex = new Map();
 
       const organizeData = (json: any[], fileKey: string) => {
         json.forEach((item) => {
