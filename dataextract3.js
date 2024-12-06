@@ -1,3 +1,5 @@
+import React, { useState } from 'react';
+
 const HighlightMatchingText: React.FC = () => {
   const [jsonData1, setJsonData1] = useState<string>('');
   const [jsonData2, setJsonData2] = useState<string>('');
@@ -6,6 +8,36 @@ const HighlightMatchingText: React.FC = () => {
   const [highlight, setHighlight] = useState<boolean>(false);
   const [caseSensitive, setCaseSensitive] = useState<boolean>(false);
 
+  const escapeHTML = (str: string) => {
+    const element = document.createElement('div');
+    if (str) {
+      element.innerText = str;
+      element.textContent = str;
+    }
+    return element.innerHTML;
+  };
+
+  const unescapeHTML = (str: string) => {
+    const element = document.createElement('div');
+    if (str) {
+      element.innerHTML = str;
+    }
+    return element.textContent || '';
+  };
+
+  const flattenJSON = (obj: any, prefix = ''): Record<string, any> => {
+    let result: Record<string, any> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      const newKey = prefix ? `${prefix}.${key}` : key;
+      if (typeof value === 'object' && value !== null) {
+        result = { ...result, ...flattenJSON(value, newKey) };
+      } else {
+        result[newKey] = value;
+      }
+    }
+    return result;
+  };
+
   const matchWords = (text: string, searchWords: string[]): (string | JSX.Element)[] => {
     const processedText = caseSensitive ? text : text.toLowerCase();
     return processedText.split(' ').map((word, index) => {
@@ -13,10 +45,7 @@ const HighlightMatchingText: React.FC = () => {
         word.includes(caseSensitive ? searchWord : searchWord.toLowerCase())
       );
       return highlight && isMatch ? (
-        <span
-          key={index}
-          className="bg-yellow-300 p-1 rounded-md"
-        >
+        <span key={index} className="bg-yellow-200 p-1 rounded">
           {word}{' '}
         </span>
       ) : (
@@ -50,16 +79,14 @@ const HighlightMatchingText: React.FC = () => {
         Object.entries(flatJson1).forEach(([key, value]) => {
           if (key.includes(`.${index}.`) || (!key.includes('.index.') && index === 'default')) {
             groupedOutput[index].push(
-              <div key={`json1-${key}`} className="mb-6">
-                <div className="text-lg font-semibold text-gray-700">{escapeHTML(key)}</div>
+              <div key={`json1-${key}`} className="mb-4">
+                <div className="font-medium text-gray-800">{escapeHTML(key)}</div>
                 {key === 'url-info' || key === 'url' ? (
-                  <div className="text-blue-500">
-                    <a href={value} target="_blank" rel="noopener noreferrer" className="underline">
-                      {value}
-                    </a>
-                  </div>
+                  <a href={value} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+                    {value}
+                  </a>
                 ) : (
-                  <pre className="text-sm text-gray-600 whitespace-pre-wrap break-words">{matchWords(value, Object.values(flatJson2).flat())}</pre>
+                  <pre className="text-gray-600 whitespace-pre-wrap break-words text-sm">{matchWords(value, Object.values(flatJson2).flat())}</pre>
                 )}
               </div>
             );
@@ -69,16 +96,14 @@ const HighlightMatchingText: React.FC = () => {
         Object.entries(flatJson2).forEach(([key, value]) => {
           if (key.includes(`.${index}.`) || (!key.includes('.index.') && index === 'default')) {
             groupedOutput[index].push(
-              <div key={`json2-${key}`} className="mb-6">
-                <div className="text-lg font-semibold text-gray-700">{escapeHTML(key)}</div>
+              <div key={`json2-${key}`} className="mb-4">
+                <div className="font-medium text-gray-800">{escapeHTML(key)}</div>
                 {key === 'url-info' || key === 'url' ? (
-                  <div className="text-blue-500">
-                    <a href={value} target="_blank" rel="noopener noreferrer" className="underline">
-                      {value}
-                    </a>
-                  </div>
+                  <a href={value} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">
+                    {value}
+                  </a>
                 ) : (
-                  <pre className="text-sm text-gray-600 whitespace-pre-wrap break-words">{matchWords(value, Object.values(flatJson1).flat())}</pre>
+                  <pre className="text-gray-600 whitespace-pre-wrap break-words text-sm">{matchWords(value, Object.values(flatJson1).flat())}</pre>
                 )}
               </div>
             );
@@ -89,14 +114,11 @@ const HighlightMatchingText: React.FC = () => {
       const finalOutput: (string | JSX.Element)[] = [];
       Object.entries(groupedOutput).forEach(([groupKey, groupEntries], index) => {
         finalOutput.push(
-          <div key={groupKey} className="mb-8">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">Group {groupKey}</h2>
+          <div key={groupKey} className="mb-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Group {groupKey}</h2>
             {groupEntries}
           </div>
         );
-        if (index < Object.keys(groupedOutput).length - 1) {
-          finalOutput.push(<div key={`spacer-${index}`} className="mb-8" />);
-        }
       });
 
       setOutput(finalOutput);
@@ -108,32 +130,32 @@ const HighlightMatchingText: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-lg">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">Highlight Matching Text</h1>
+    <div className="max-w-4xl mx-auto p-8 bg-white rounded shadow-md">
+      <h1 className="text-2xl font-bold text-gray-900 mb-6">Highlight Matching Text</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <textarea
-          className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition duration-200"
+          className="w-full p-4 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 transition duration-200"
           placeholder="Enter JSON Data 1"
           value={jsonData1}
           onChange={(e) => setJsonData1(e.target.value)}
         />
         <textarea
-          className="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 transition duration-200"
+          className="w-full p-4 border border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 transition duration-200"
           placeholder="Enter JSON Data 2"
           value={jsonData2}
           onChange={(e) => setJsonData2(e.target.value)}
         />
       </div>
 
-      <div className="flex items-center justify-between mt-6">
+      <div className="flex items-center justify-between mt-4">
         <div className="flex items-center">
           <input
             type="checkbox"
             checked={highlight}
             onChange={() => setHighlight(!highlight)}
             id="highlight-toggle"
-            className="mr-3 rounded-sm text-indigo-600 focus:ring-2 focus:ring-indigo-500"
+            className="mr-2 rounded text-indigo-600 focus:ring-2 focus:ring-indigo-500"
           />
           <label htmlFor="highlight-toggle" className="text-sm text-gray-700">
             Highlight matched words
@@ -145,7 +167,7 @@ const HighlightMatchingText: React.FC = () => {
             checked={caseSensitive}
             onChange={() => setCaseSensitive(!caseSensitive)}
             id="case-sensitive-toggle"
-            className="mr-3 rounded-sm text-indigo-600 focus:ring-2 focus:ring-indigo-500"
+            className="mr-2 rounded text-indigo-600 focus:ring-2 focus:ring-indigo-500"
           />
           <label htmlFor="case-sensitive-toggle" className="text-sm text-gray-700">
             Case sensitive matching
@@ -155,13 +177,13 @@ const HighlightMatchingText: React.FC = () => {
 
       <button
         onClick={handleMatch}
-        className="mt-6 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-200"
+        className="mt-6 px-6 py-2.5 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition duration-200"
       >
         Match
       </button>
 
       {error && (
-        <div className="mt-6 p-4 bg-red-100 text-red-700 border border-red-400 rounded-lg">
+        <div className="mt-6 p-4 bg-red-100 text-red-700 border border-red-400 rounded">
           {error}
         </div>
       )}
