@@ -75,33 +75,29 @@ const HighlightMatchingText: React.FC = () => {
       const groupedOutput: Record<string, Record<string, string[]>> = {};
 
       apiRecordKeys1.forEach((apiRecordKey1) => {
-        const index = apiRecordKey1.split('.')[1]; // Extract index
-        const apiRecordName = apiRecordKey1.split('.')[0]; // Extract name
+        const index = apiRecordKey1.split('.')[1];
+        const apiRecordName = apiRecordKey1.split('.')[0];
 
-        if (!groupedOutput[apiRecordName]) {
-          groupedOutput[apiRecordName] = {};
-        }
-        if (!groupedOutput[apiRecordName][index]) {
-          groupedOutput[apiRecordName][index] = [];
-        }
+        groupedOutput[apiRecordName] = groupedOutput[apiRecordName] || {};
+        groupedOutput[apiRecordName][index] = groupedOutput[apiRecordName][index] || [];
 
+        // Collect entries from JSON1
         Object.entries(flatJson1).forEach(([key, value]) => {
-          if (key.startsWith(`${apiRecordName}.${index}.`)) {
+          if (key.startsWith(`${apiRecordName}.${index}.`) && key !== apiRecordKey1) {
             groupedOutput[apiRecordName][index].push(`${escapeHTML(key)}: ${escapeHTML(value)}`);
           }
         });
 
+        // Find corresponding api-record in JSON2 and collect entries
         const correspondingApiRecordKey2 = apiRecordKeys2.find((key) => key.startsWith(`${apiRecordName}.${index}.`));
         if (correspondingApiRecordKey2) {
           Object.entries(flatJson2).forEach(([key, value]) => {
-            if (key.startsWith(`${apiRecordName}.${index}.`)) {
+            if (key.startsWith(`${apiRecordName}.${index}.`) && key !== correspondingApiRecordKey2) {
               groupedOutput[apiRecordName][index].push(`${escapeHTML(key)}: ${escapeHTML(value)}`);
             }
           });
         }
       });
-
-      console.log("Grouped Output:", groupedOutput); // Debugging the grouped output
 
       const finalOutput: (string | JSX.Element)[] = [];
       Object.entries(groupedOutput).forEach(([apiRecordName, indices]) => {
@@ -128,7 +124,7 @@ const HighlightMatchingText: React.FC = () => {
       setOutput(finalOutput);
       setError('');
     } catch (e: any) {
-      console.error(e); // Debugging the error
+      console.error(e);
       setError(`Invalid JSON input: ${e.message}`);
       setOutput([]);
     }
