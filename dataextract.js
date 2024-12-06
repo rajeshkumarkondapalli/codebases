@@ -16,6 +16,7 @@ const escapeHTML = (str: string): string =>
 const unescapeHTML = (str: string): string =>
   str.replace(/&quot;/g, '"').replace(/&amp;/g, '&');
 
+// Function to flatten nested JSON
 const flattenJSON = (data: any, prefix = ''): Record<string, string> => {
   let result: Record<string, string> = {};
   for (const key in data) {
@@ -69,50 +70,62 @@ const HighlightMatchingText: React.FC = () => {
       const flatJson1 = flattenJSON(parsedJson1);
       const flatJson2 = flattenJSON(parsedJson2);
 
-      // Filter fields
-      const allowedFields = ['raw-response', 'url-info', 'payload', 'index', 'url', 'api-record'];
-      const filteredJson1 = Object.fromEntries(
-        Object.entries(flatJson1).filter(([key]) =>
-          allowedFields.some((field) => key.endsWith(field))
-        )
-      );
-      const filteredJson2 = Object.fromEntries(
-        Object.entries(flatJson2).filter(([key]) =>
-          allowedFields.some((field) => key.endsWith(field))
-        )
-      );
+      // Extract indices from both JSONs
+      const indices1 = Object.keys(flatJson1)
+        .filter((key) => key.includes('index'))
+        .map((key) => key.split('.')[1]);
+      const indices2 = Object.keys(flatJson2)
+        .filter((key) => key.includes('index'))
+        .map((key) => key.split('.')[1]);
 
-      const searchWords = Object.values(filteredJson2)
-        .flatMap((value) => value.split(' '))
-        .filter((word) => word);
+      // Combine indices and remove duplicates
+      const allIndices = [...new Set([...indices1, ...indices2])];
 
-      const processedSearchWords = caseSensitive
-        ? searchWords
-        : searchWords.map((word) => word.toLowerCase());
-
-      // Group entries by 'index' value
+      // Group entries based on index
       const groupedOutput: Record<string, (string | JSX.Element)[]> = {};
 
-      Object.entries(filteredJson1).forEach(([key, value], index) => {
-        const groupKey = key.includes('index') ? key.split('.')[0] : `Group ${Math.floor(index / 5) + 1}`;
-        if (!groupedOutput[groupKey]) {
-          groupedOutput[groupKey] = [];
-        }
+      allIndices.forEach((index) => {
+        groupedOutput[index] = [];
 
-        groupedOutput[groupKey].push(
-          <div key={index} className="mb-6">
-            <div className="font-medium text-lg text-indigo-600">{escapeHTML(key)}</div>
-            {key === 'url-info' || key === 'url' ? (
-              <div className="text-blue-500">
-                <a href={value} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                  {value}
-                </a>
+        // Add properties from JSON1 for the current index
+        Object.entries(flatJson1).forEach(([key, value]) => {
+          if (key.includes(`.${index}.`) || (!key.includes('.index.') && index === 'default')) {
+            groupedOutput[index].push(
+              <div key={`json1-${key}`} className="mb-6">
+                <div className="font-medium text-lg text-indigo-600">{escapeHTML(key)}</div>
+                {key === 'url-info' || key === 'url' ? (
+                  <div className="text-blue-500">
+                    <a href={value} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                      {value}
+                    </a>
+                  </div>
+                ) : (
+                  <pre>{matchWords(value, Object.values(flatJson2).flat())}</pre> // Removed styles from here
+                )}
               </div>
-            ) : (
-              <pre className="bg-gray-50 p-4 rounded-lg border border-gray-300 text-sm">{matchWords(value, processedSearchWords)}</pre>
-            )}
-          </div>
-        );
+            );
+          }
+        });
+
+        // Add properties from JSON2 for the current index
+        Object.entries(flatJson2).forEach(([key, value]) => {
+          if (key.includes(`.${index}.`) || (!key.includes('.index.') && index === 'default')) {
+            groupedOutput[index].push(
+              <div key={`json2-${key}`} className="mb-6">
+                <div className="font-medium text-lg text-indigo-600">{escapeHTML(key)}</div>
+                {key === 'url-info' || key === 'url' ? (
+                  <div className="text-blue-500">
+                    <a href={value} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                      {value}
+                    </a>
+                  </div>
+                ) : (
+                  <pre>{matchWords(value, Object.values(flatJson1).flat())}</pre> // Removed styles from here
+                )}
+              </div>
+            );
+          }
+        });
       });
 
       // Flatten the grouped output with spacing
@@ -120,7 +133,7 @@ const HighlightMatchingText: React.FC = () => {
       Object.entries(groupedOutput).forEach(([groupKey, groupEntries], index) => {
         finalOutput.push(
           <div key={groupKey} className="mb-8">
-            <h2 className="text-xl font-bold text-gray-800 mb-4">{groupKey}</h2>
+            <h2 className="text-xl font-bold text-gray-800 mb-4">Group {groupKey}</h2>
             {groupEntries}
           </div>
         );
@@ -192,19 +205,13 @@ const HighlightMatchingText: React.FC = () => {
         Match
       </button>
 
-      <div className="mt-8">
-        {error ? (
-          <p className="text-red-600 font-semibold">{error}</p>
-        ) : (
-          <div className="bg-white p-6 border border-gray-200 rounded-lg shadow-sm">
-            {output.length > 0 ? (
-              <div>{output}</div>
-            ) : (
-              <p className="text-gray-500">No output to display</p>
-            )}
-          </div>
-        )}
-      </div>
+      {error && (
+        <div className="mt-6 p-4 bg-red-100 text-red-700 border border-red-400 rounded-lg">
+          {error}
+        </div>
+      )}
+
+      <div className="mt-8">{output}</div>
     </div>
   );
 };
