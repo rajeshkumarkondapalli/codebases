@@ -82,6 +82,7 @@ const HighlightMatchingText: React.FC = () => {
         result += matchedText;
       });
 
+      // Ensure that we convert the result to plain text
       setOutput(result);
       setError('');
     } catch (e) {
