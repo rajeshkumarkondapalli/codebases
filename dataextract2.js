@@ -70,7 +70,7 @@ const HighlightMatchingText: React.FC = () => {
       const flatJson2 = flattenJSON(parsedJson2);
 
       // Filter fields
-      const allowedFields = ['raw-response', 'url-info', 'payload', 'index', 'url'];
+      const allowedFields = ['raw-response', 'url-info', 'payload', 'index', 'url', 'api-record'];
       const filteredJson1 = Object.fromEntries(
         Object.entries(flatJson1).filter(([key]) =>
           allowedFields.some((field) => key.endsWith(field))
@@ -90,10 +90,16 @@ const HighlightMatchingText: React.FC = () => {
         ? searchWords
         : searchWords.map((word) => word.toLowerCase());
 
-      // Generate output with URL
-      const matchedOutput: (string | JSX.Element)[] = [];
+      // Group entries by 'api-record'
+      const groupedOutput: Record<string, (string | JSX.Element)[]> = {};
+
       Object.entries(filteredJson1).forEach(([key, value], index) => {
-        matchedOutput.push(
+        const apiRecord = key.includes('api-record') ? key.split('.')[0] : 'default'; // Group by api-record or default
+        if (!groupedOutput[apiRecord]) {
+          groupedOutput[apiRecord] = [];
+        }
+
+        groupedOutput[apiRecord].push(
           <div key={index} className="mb-6">
             <div className="font-medium text-lg text-indigo-600">{escapeHTML(key)}</div>
             {key === 'url-info' || key === 'url' ? (
@@ -109,7 +115,18 @@ const HighlightMatchingText: React.FC = () => {
         );
       });
 
-      setOutput(matchedOutput);
+      // Flatten the grouped output
+      const finalOutput: (string | JSX.Element)[] = [];
+      Object.entries(groupedOutput).forEach(([groupKey, groupEntries]) => {
+        finalOutput.push(
+          <div key={groupKey} className="mb-8">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">{groupKey}</h2>
+            {groupEntries}
+          </div>
+        );
+      });
+
+      setOutput(finalOutput);
       setError('');
     } catch (e: any) {
       // Handle errors
