@@ -28,7 +28,7 @@ const HighlightMatchingText: React.FC = () => {
       if (data[key] !== null && typeof data[key] === 'object') {
         result = { ...result, ...flattenJSON(data[key], `${prefix}${key}.`) };
       } else {
-        result[`${prefix}${key}`] = String(data[key]);
+        result[`${prefix}${key}`] = String(data[key]); // Convert to string for consistency
       }
     }
 
@@ -38,8 +38,8 @@ const HighlightMatchingText: React.FC = () => {
   const handleMatch = () => {
     try {
       // Parse and flatten both JSON inputs
-      const parsedJson1 = JSON.parse(jsonData1);
-      const parsedJson2 = JSON.parse(jsonData2);
+      const parsedJson1 = JSON.parse(jsonData1.trim()); // Trim to avoid whitespace issues
+      const parsedJson2 = JSON.parse(jsonData2.trim());
 
       const flatJson1 = flattenJSON(parsedJson1);
       const flatJson2 = flattenJSON(parsedJson2);
