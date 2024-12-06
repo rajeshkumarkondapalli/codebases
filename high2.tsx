@@ -41,6 +41,20 @@ const HighlightMatchingText: React.FC = () => {
     });
   };
 
+  // Function to handle newlines and double quotes in the text
+  const formatText = (text: string) => {
+    // Handle newline characters by converting \n to <br/>
+    const formattedText = text.split('\n').map((line, index) => {
+      return (
+        <span key={index}>
+          {line}
+          {index < text.split('\n').length - 1 && <br />}
+        </span>
+      );
+    });
+    return formattedText;
+  };
+
   // Function to find matching texts between the two JSON data
   const findMatches = () => {
     const matches: string[] = [];
@@ -57,10 +71,11 @@ const HighlightMatchingText: React.FC = () => {
   // Function to highlight the matching text
   const highlightText = (text: string) => {
     return text.split(' ').map((word, index) => {
+      const escapedWord = escapeHTML(word);
       if (matchedText.includes(word)) {
-        return <span key={index} style={{ backgroundColor: 'yellow' }}>{escapeHTML(word)} </span>;
+        return <span key={index} style={{ backgroundColor: 'yellow' }}>{escapedWord} </span>;
       }
-      return escapeHTML(word) + ' ';
+      return escapedWord + ' ';
     });
   };
 
@@ -108,7 +123,7 @@ const HighlightMatchingText: React.FC = () => {
         <div className="mt-4">
           {matchedText.length > 0 ? (
             matchedText.map((text, index) => (
-              <p key={index} className="text-gray-700">{highlightText(text)}</p>
+              <p key={index} className="text-gray-700">{highlightText(formatText(text))}</p>
             ))
           ) : (
             <p className="text-gray-500">No matches found</p>
