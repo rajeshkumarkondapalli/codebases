@@ -38,24 +38,7 @@ def convert_groovy_to_freemarker(groovy_code: str) -> str:
     freemarker_code = re.sub(r'\}', r'</#if>', freemarker_code)
     freemarker_code = re.sub(r'</#if></#if>', r'</#switch>', freemarker_code)  # Fix nested closing tags
 
-    # Add newlines for structure
-    freemarker_code = re.sub(r'(<#\w+[^>]*>)', r'\n\1', freemarker_code)
-    freemarker_code = re.sub(r'(</#\w+>)', r'\n\1\n', freemarker_code)
-    freemarker_code = re.sub(r'(\$\{.*?\})', r'\n\1\n', freemarker_code)
-
-    # Ensure clean formatting with indentation
-    lines = freemarker_code.split('\n')
-    formatted_lines = []
-    indent_level = 0
-    for line in lines:
-        line = line.strip()
-        if line.startswith('</#'):  # Closing tag
-            indent_level -= 1
-        formatted_lines.append('    ' * indent_level + line)
-        if line.startswith('<#') and not line.startswith('</#') and not line.endswith('/>'):
-            indent_level += 1
-    
-    return '\n'.join(formatted_lines)
+    return freemarker_code
 
 def process_folder(input_folder: str):
     """
