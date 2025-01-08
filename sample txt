@@ -1,0 +1,14 @@
+<#function getListFromResponse responseValue key>
+  <#assign values = []>
+
+  <#if responseValue?hasContent && responseValue.nd.response?hasContent>
+    <#assign nodes = responseValue.nd.response.xpath(key)> <#-- Use XPath to get all matching nodes -->
+    <#if nodes?hasContent> <#-- Check if any nodes were found -->
+      <#list nodes as node>
+        <#assign values = values + [node?string]> <#-- Add the string value of each node -->
+      </#list>
+    </#if>
+  </#if>
+
+  <#return values>
+</#function>
