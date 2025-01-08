@@ -1,5 +1,40 @@
 <#function getListFromResponse responseValue key>
   <#assign values = []>
+  
+  <#-- Check if responseValue and the nd.response exist -->
+  <#if responseValue?hasContent && responseValue.nd?hasContent && responseValue.nd.response?hasContent>
+    <#-- Use XPath to get all matching nodes -->
+    <#assign nodes = responseValue.nd.response?eval(key)>
+    
+    <#-- Ensure nodes are valid -->
+    <#if nodes?hasContent>
+      <#list nodes as node>
+        <#assign values = values + [node?string]> 
+      </#list>
+    <#else>
+      <#-- Log warning if no nodes are found -->
+      <#assign values = ["No matching nodes found for key: ${key}"]>
+    </#if>
+  <#else>
+    <#-- Log error if responseValue or nd.response is missing -->
+    <#assign values = ["Error: Missing or invalid response structure."]>
+  </#if>
+  
+  <#return values>
+</#function>
+
+
+
+
+
+
+
+
+
+
+
+<#function getListFromResponse responseValue key>
+  <#assign values = []>
 
   <#if responseValue?hasContent && responseValue.nd.response?hasContent>
     <#assign nodes = responseValue.nd.response.xpath(key)> <#-- Use XPath to get all matching nodes -->
