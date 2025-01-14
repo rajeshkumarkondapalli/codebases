@@ -1,0 +1,7 @@
+<#assign var1 = "example">
+<#assign pattern = "FP\\d+-" + var1>
+<#if "FP123-example"?matches(pattern)>
+    Matched!
+<#else>
+    Not matched!
+</#if>
