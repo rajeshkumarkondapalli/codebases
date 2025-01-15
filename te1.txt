@@ -1,3 +1,57 @@
+
+
+<#-- Define the arrays -->
+<#assign fpMeterArr = inputs["fp-meter"]>
+<#assign fpClassifiersArr = inputs["fp-classifiers"]>
+<#assign fpNameArr = inputs["fp-name"]>
+
+<#-- Define the patterns -->
+<#assign shmMeterNamePattern = "AGG-METER-GRP\\d+$">
+<#assign fpNamePattern = "FP\\d+" + inputs["circuit-name"] + "$">
+
+<#-- Find the index -->
+<#assign index = -1>
+<#list fpNameArr as name>
+    <#if name?matches(fpNamePattern)>
+        <#assign index = fpNameArr?index_of(name)>
+        <#break>
+    </#if>
+</#list>
+
+<#-- If a valid index is found -->
+<#if index != -1>
+    <#assign fpName = fpNameArr[index]>
+    <#assign fpMeter = fpMeterArr[index]>
+    
+    <#-- Check if fpMeter matches the shared meter pattern -->
+    <#if fpMeter?matches(shmMeterNamePattern)>
+        <#-- EVC is associated with shared meter -->
+        <#assign outputs["ignore-delete-qos-call"] = false>
+        <#assign outputs["shared-meter-name"] = fpMeter>
+
+        <#-- Count EVCs associated with the shared meter -->
+        <#assign evcLinked = 0>
+        <#list fpMeterArr as meter>
+            <#if meter == fpMeter>
+                <#assign evcLinked += 1>
+            </#if>
+        </#list>
+
+        <#-- Handle EVC link count conditions -->
+        <#if evcLinked > 1>
+            <#assign outputs["ignore-shared-meter-update-call"] = false>
+        <#elseif evcLinked == 1>
+            <#assign outputs["ignore-shared-meter-delete-call"] = false>
+        </#if>
+    </#if>
+</#if>
+
+<#-- Assign the classifiers -->
+<#if index != -1>
+    <#assign outputs["classifiers"] = fpClassifiersArr[index]>
+</#if>
+
+
 <#assign var1 = "example">
 <#assign pattern = "FP\\d+-" + var1>
 <#if "FP123-example"?matches(pattern)>
