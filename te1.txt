@@ -1,3 +1,18 @@
+<#assign xmlString = yourXmlContent>
+<#assign document = xmlString?xml>
+
+<#-- Specify the regular expression for the target name -->
+<#assign targetNameRegex = "FP.*hp-2">
+
+<#-- Find the matching `fp` element -->
+<#list document["ns:data"]["a:fp"] as fp>
+    <#if fp["a:name"]?string?matches(targetNameRegex)>
+        Meter Profile: ${fp["a:meter-profile"]?string}
+    </#if>
+</#list>
+
+
+
 
 
 <#-- Define the arrays -->
