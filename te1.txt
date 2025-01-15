@@ -1,3 +1,33 @@
+
+<#assign xmlString = yourXmlContent>
+<#assign document = xmlString?xml>
+
+<#-- Specify the regular expression for the target name -->
+<#assign targetNameRegex = "FP.*hp-2">
+
+<#-- Navigate to the 'a:fp' elements -->
+<#list document["response"]["ns:data"]["a:fps"]["a:fp"] as fp>
+    <#-- Check if the `a:name` matches the regex -->
+    <#if fp["a:name"]?string?matches(targetNameRegex)>
+        <#-- Extract and display the `meter-profile` if it exists -->
+        <#if fp["a:meter-profile"]?exists>
+            Meter Profile: ${fp["a:meter-profile"]?string}
+        <#else>
+            Meter Profile: Not Available
+        </#if>
+    </#if>
+</#list>
+
+
+
+
+
+
+
+
+
+
+
 <#assign xmlString = yourXmlContent>
 <#assign document = xmlString?xml>
 
