@@ -1,0 +1,32 @@
+import json
+from bs4 import BeautifulSoup
+
+def extract_data_from_html(html_file):
+    """
+    Extracts key-value pairs from HTML files containing JSON responses within <pre><code> tags.
+
+    Args:
+        html_file (str): Path to the HTML file.
+
+    Returns:
+        dict: A dictionary containing the extracted key-value pairs.
+    """
+
+    with open(html_file, 'r') as f:
+        soup = BeautifulSoup(f, 'html.parser')
+
+    # Find the <pre><code> tag containing the JSON response
+    code_tag = soup.find('pre').find('code')
+    json_data = json.loads(code_tag.text)
+    
+    return json_data
+
+# Example usage:
+file1_data = extract_data_from_html("html_snippet_1.html")  # Replace with your file path
+file2_data = extract_data_from_html("html_snippet_2.html")  # Replace with your file path
+
+print("Data from HTML Snippet 1:")
+print(json.dumps(file1_data, indent=4))
+
+print("\nData from HTML Snippet 2:")
+print(json.dumps(file2_data, indent=4))
