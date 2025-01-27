@@ -1,3 +1,30 @@
+
+<#assign localMeter = "1R2C_SomeClass-123_v01">
+<#assign isLocalMeterFound = false>
+<#assign outputs = {} />
+
+<#if localMeter?matches("^1R2C_(?<svcClass>[A-Za-z]+)-(?<cir>\\d+)_v01$")>
+    <#assign isLocalMeterFound = true>
+    <#assign svcClass = localMeter?groups["svcClass"]>
+    <#assign cir = localMeter?groups["cir"]>
+</#if>
+
+<#if isLocalMeterFound>
+    <#assign outputs["cos"] = "Logic to compute COS based on svcClass">
+    <#assign outputs["cin"] = cir?number>
+</#if>
+
+<!-- Debug output -->
+<pre>
+isLocalMeterFound: ${isLocalMeterFound}
+cos: ${outputs["cos"]!}
+cin: ${outputs["cin"]!}
+</pre>
+
+
+
+
+
 <#function getValuesByPath xml path>
     <#-- Parse XML -->
     <#assign document = xml?interpretXml>
