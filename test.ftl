@@ -1,3 +1,22 @@
+<#assign localMeter = "1R2C_BD-1000_v01" /> <#-- Or the *exact* value from output -->
+<#assign pattern1 = "1R2C_(?<svcClass>[A-Za-z]+)-(?<cir>\d+)_v01" />
+<#assign matcher1 = localMeter?matches(pattern1) />
+
+<#if matcher1?size gt 0>
+  <p>Match found!</p>
+  <p>First group: ${matcher1[0]}</p> <#-- Check if this works -->
+  <p>Second group: ${matcher1[1]}</p> <#-- Check if this works -->
+<#else>
+  <p>No match.</p>  <#-- This will likely be the output -->
+</#if>
+
+<#-- Print matcher1 for debugging -->
+<#if matcher1??><#list matcher1 as group><p>Group: ${group}</p></#list><#else><p>matcher1 is null</p></#if>
+
+
+
+
+
 
 <#assign localMeter = "1R2C_BD-1000_v01" /> <#-- The string to match -->
 <#assign pattern1 = "1R2C_([A-Za-z]+)-(\\d+)_v01" /> <#-- The regex -->
