@@ -1,3 +1,21 @@
+
+<#assign localMeter = "1R2C_BD-1000_v01" /> <#-- The string to match -->
+<#assign pattern1 = "1R2C_([A-Za-z]+)-(\\d+)_v01" /> <#-- The regex -->
+
+<#if localMeter?matches(pattern1)>
+  <#assign groups = localMeter?groups />
+  <#assign svcClass = groups[1] /> <#-- Get the first captured group -->
+  <#assign cir = groups[2] />    <#-- Get the second captured group -->
+
+  <p>Service Class: ${svcClass}</p>
+  <p>Circuit: ${cir}</p>
+<#else>
+  <p>Pattern did not match.</p>
+</#if>
+
+
+
+
 <#assign localMeter = "1R2C_BD-1000_v01" /> <#-- The string to match -->
 <#assign pattern1 = "1R2C_([A-Za-z]+)-(\\d+)_v01" /> <#-- The regex -->
 
