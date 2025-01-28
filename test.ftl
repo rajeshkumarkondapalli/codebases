@@ -1,3 +1,27 @@
+<#assign localMeter = "1R2C_BD-1000_v01" />
+
+<#-- Find the indices of the delimiters -->
+<#assign underscore1 = localMeter?index_of("_") />
+<#assign hyphen = localMeter?index_of("-") />
+<#assign underscore2 = localMeter?last_index_of("_") /> <#-- Find the last underscore -->
+
+<#if underscore1 != -1 && hyphen != -1 && underscore2 != -1> <#-- Check if all delimiters exist -->
+  <#assign svcClass = localMeter?substring(underscore1 + 1, hyphen) />
+  <#assign cir = localMeter?substring(hyphen + 1, underscore2) />
+
+  <p>Service Class: ${svcClass}</p>
+  <p>Circuit: ${cir}</p>
+<#else>
+  <p>String format is incorrect.</p>
+</#if>
+
+
+
+
+
+
+
+
 <#assign localMeter = "1R2C_BD-1000_v01" /> <#-- Or the *exact* value from output -->
 <#assign pattern1 = "1R2C_(?<svcClass>[A-Za-z]+)-(?<cir>\d+)_v01" />
 <#assign matcher1 = localMeter?matches(pattern1) />
