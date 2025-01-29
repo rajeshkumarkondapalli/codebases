@@ -1,3 +1,54 @@
+
+
+<#assign output3>
+<![CDATA[<response xmlns:ns="urn:ietf:params:xml:ns:netconf:base:1.0"
+    xmlns:j="urn:ciena:params:xml:ns:yang:ciena-en:ciena-mef-gos-flow">
+    <ns:data>
+        <qos-flows>
+            <qos-flow>
+                <name>QF-INTEROP-UC1A-RT</name>
+                <classifier-list-precedence>1</classifier-list-precedence>
+                <meter-profile>1R2C_PD-1000_v01_CHILD</meter-profile>
+                <parent-fp>FP4-INTEROP-UC1A-RT</parent-fp>
+                <stats-collection>on</stats-collection>
+            </qos-flow>
+            <qos-flow>
+                <name>QF-INTEROP-UC1B-RT</name>
+                <classifier-list>1002-FD-INTEROP-UC1B-RT</classifier-list>
+                <classifier-list-precedence>1</classifier-list-precedence>
+                <meter-profile>1R2C_PD-1000_v01_CHILD</meter-profile>
+                <parent-fp>FP4-INTEROP-UC1B-RT</parent-fp>
+                <stats-collection>on</stats-collection>
+            </qos-flow>
+        </qos-flows>
+    </ns:data>
+</response>]]>
+</#assign>
+
+<#-- Parse the XML string into an XML document object -->
+<#assign doc = output3?xml>
+
+<#-- Access elements using XPath-like syntax on the parsed document -->
+<#assign qosFlows = doc.response.data['qos-flows']['qos-flow']>
+
+<#-- Now you can iterate over the qos-flow elements -->
+<#list qosFlows as qosFlow>
+    <#assign name = qosFlow.name>
+    <#assign parentFP = qosFlow['parent-fp']>
+    <#assign statsCollection = qosFlow['stats-collection']>
+
+    <#-- Output the extracted data -->
+    QoS Flow Name: ${name}<br>
+    Parent FP: ${parentFP}<br>
+    Stats Collection: ${statsCollection}<br><br>
+</#list>
+
+<#-- Debug output (optional) -->
+<#-- abc-debug(["qos test:", qosFlows])> --%> 
+
+
+
+
 <#assign xmlString><![CDATA[
 <data>
   <item id="1">Value 1</item>
