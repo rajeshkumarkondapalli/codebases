@@ -1,3 +1,54 @@
+<#assign xmlString><![CDATA[
+<data>
+  <item id="1">Value 1</item>
+  <item id="2">Value 2</item>
+  <item id="3">
+    <nested>Nested Value</nested>
+  </item>
+</data>
+]]></#assign>
+
+<#assign data = xml(xmlString)>
+
+<#-- Accessing elements -->
+Item 1 ID: ${data.data.item[0].@id}
+Item 1 Value: ${data.data.item[0]}
+Item 2 Value: ${data.data.item[1]}
+Item 3 Nested Value: ${data.data.item[2].nested}
+
+<#-- Iterating over items -->
+<ul>
+  <#list data.data.item as item>
+    <li>ID: ${item.@id}, Value: ${item}</li>
+  </#list>
+</ul>
+
+<#-- Handling missing elements (important!) -->
+<#if data.data.missingElement??>
+  Missing element exists: ${data.data.missingElement} <#-- This won't execute -->
+<#else>
+  Missing element does NOT exist.
+</#if>
+
+<#-- More robust way to handle missing elements -->
+${(data.data.item[3].nested)!""} <#-- Uses default value if missing -->
+${data.data.item[3].nested?default("Default Value")} <#-- Another default value option -->
+
+<#-- Outputting the entire XML structure (for debugging) -->
+${data?string}
+
+
+
+
+
+
+
+
+
+
+
+
+
 <#assign localMeter = "1R2C_BD-1000_v01" />
 
 <#-- Find the indices of the delimiters -->
