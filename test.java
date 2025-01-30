@@ -1,3 +1,36 @@
+
+class SafeThread extends Thread {
+    @Override
+    public void run() {
+        try {
+            // Simulate some work
+            System.out.println("Thread is running...");
+            if (Math.random() > 0.5) {
+                throw new RuntimeException("Simulated Exception");
+            }
+            System.out.println("Thread completed successfully.");
+        } catch (Exception e) {
+            System.err.println("Exception caught: " + e.getMessage());
+        } finally {
+            // Clean up resources
+            System.out.println("Cleaning up resources...");
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        SafeThread thread = new SafeThread();
+        thread.start();
+    }
+
+
+
+
+
+
+
+
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.bind.annotation.GetMapping;
