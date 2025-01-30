@@ -1,4 +1,50 @@
 
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+public class RemountTask implements Runnable {
+
+    public void run() {
+        try {
+            test();
+            clearInProgressList();
+        } catch (InterruptedException e) {
+            // Log the interruption
+            Thread.currentThread().interrupt(); // Restore interrupt status
+        }
+    }
+
+    private void clearInProgressList() {
+        QueueReader.lock.lock();
+        try {
+            QueueReader.inProgressGroups.remove("group");
+        } finally {
+            QueueReader.lock.unlock();
+        }
+    }
+
+    private void test() throws InterruptedException {
+        // Replace this with your actual logic
+        //...
+
+        // Example of an operation that might throw InterruptedException
+        Thread.sleep(1000); 
+    }
+}
+
+class QueueReader {
+    public static Lock lock = new ReentrantLock();
+    //... other members...
+}
+
+
+
+
+
+
+
+
+
 class SafeThread extends Thread {
     @Override
     public void run() {
