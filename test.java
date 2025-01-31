@@ -1,4 +1,91 @@
 
+
+
+You can combine both TimeoutRetryPolicy and SimpleRetryPolicy using CompositeRetryPolicy in Spring Retry. This allows you to enforce both a maximum number of attempts and a total timeout limit.
+
+
+---
+
+Example: Combining TimeoutRetryPolicy and SimpleRetryPolicy
+
+import org.springframework.retry.support.RetryTemplate;
+import org.springframework.retry.policy.TimeoutRetryPolicy;
+import org.springframework.retry.policy.SimpleRetryPolicy;
+import org.springframework.retry.policy.CompositeRetryPolicy;
+import org.springframework.retry.backoff.FixedBackOffPolicy;
+
+public class CombinedRetryPolicyExample {
+    public static void main(String[] args) {
+        RetryTemplate retryTemplate = new RetryTemplate();
+
+        // Define SimpleRetryPolicy (Max Attempts)
+        SimpleRetryPolicy simpleRetryPolicy = new SimpleRetryPolicy();
+        simpleRetryPolicy.setMaxAttempts(3); // Maximum 3 retries
+
+        // Define TimeoutRetryPolicy (Total Retry Duration)
+        TimeoutRetryPolicy timeoutRetryPolicy = new TimeoutRetryPolicy();
+        timeoutRetryPolicy.setTimeout(5000); // Max retry duration: 5 seconds
+
+        // Combine both policies
+        CompositeRetryPolicy compositeRetryPolicy = new CompositeRetryPolicy();
+        compositeRetryPolicy.setPolicies(new org.springframework.retry.RetryPolicy[]{simpleRetryPolicy, timeoutRetryPolicy});
+
+        // Set retry policy
+        retryTemplate.setRetryPolicy(compositeRetryPolicy);
+
+        // Set Backoff Policy (Optional)
+        FixedBackOffPolicy backOffPolicy = new FixedBackOffPolicy();
+        backOffPolicy.setBackOffPeriod(1000); // Wait 1 second between retries
+        retryTemplate.setBackOffPolicy(backOffPolicy);
+
+        try {
+            String result = retryTemplate.execute(context -> {
+                System.out.println("Attempting operation...");
+                simulateOperation();
+                return "Success";
+            });
+
+            System.out.println("Operation result: " + result);
+        } catch (Exception e) {
+            System.out.println("Operation failed after retries: " + e.getMessage());
+        }
+    }
+
+    private static void simulateOperation() throws Exception {
+        // Simulating failure scenario
+        throw new RuntimeException("Simulated failure");
+    }
+}
+
+
+---
+
+How It Works
+
+1. SimpleRetryPolicy ensures a maximum of 3 retry attempts.
+
+
+2. TimeoutRetryPolicy ensures that retries do not exceed 5 seconds in total.
+
+
+3. CompositeRetryPolicy combines both policies so that retries stop whenever the first condition is met (either max attempts or timeout).
+
+
+4. FixedBackOffPolicy ensures a 1-second delay between retries.
+
+
+
+Would you like additional customization, such as exponential backoff?
+
+
+
+
+
+
+
+
+
+
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
