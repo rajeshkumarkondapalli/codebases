@@ -1,3 +1,14 @@
+<#assign downStatuses = ["DOWN", "TESTING", "DORMANT", "NOT_PRESENT", "LOWER_LAYER_DOWN"]>
+
+<#if inputs['oper-status[0]'] == "UP">
+  <#assign outputs['oper-status'] = "UP">
+<#elseif downStatuses?seq_contains(inputs['oper-status[0]'])>
+  <#assign outputs['oper-status'] = "DOWN">
+<#else>
+  <#assign outputs['oper-status'] = "UNKNOWN">
+</#if>
+
+
 
 
 <#assign output3>
