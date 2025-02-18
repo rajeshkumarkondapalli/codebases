@@ -1,3 +1,26 @@
+<#assign downStatuses = ["DOWN", "TESTING", "DORMANT", "NOT_PRESENT", "LOWER_LAYER_DOWN"] />
+
+<#assign operStatus = inputs["oper-status"][0] />
+<#assign operStatusOutput = "UNKNOWN" />
+
+<#if operStatus == "UP">
+  <#assign operStatusOutput = "UP" />
+<#else>
+  <#list downStatuses as status>
+    <#if operStatus == status>
+      <#assign operStatusOutput = "DOWN" />
+      <#break>
+    </#if>
+  </#list>
+</#if>
+
+<#assign outputs = {"oper-status": operStatusOutput} />
+
+
+
+
+
+
 <#assign downStatuses = ["DOWN", "TESTING", "DORMANT", "NOT_PRESENT", "LOWER_LAYER_DOWN"]>
 
 <#if inputs['oper-status[0]'] == "UP">
