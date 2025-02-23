@@ -29,3 +29,47 @@ mvn clean install -U
 rm -rf ~/.m2/repository/org/opendaylight
 mvn clean install
 mvn clean install -Pq
+
+
+
+
+
+
+
+
+Yes! The OpenDaylight NETCONF Test Tool supports device count and port as command-line parameters when running the JAR file. You can pass these parameters in your Dockerfile or when running the container.
+
+1. Modify the Dockerfile to Support Parameters
+Update your Dockerfile to allow passing device count and port dynamically:
+
+dockerfile
+FROM openjdk:11-jre-slim
+
+WORKDIR /app
+
+# Copy files
+COPY netconf-testtool.jar /app/netconf-testtool.jar
+COPY config /app/config
+
+# Expose default NETCONF port
+EXPOSE 17830
+
+# Allow passing device count and port as environment variables
+CMD ["sh", "-c", "java -jar /app/netconf-testtool.jar --device-count=${DEVICE_COUNT:-1} --port=${PORT:-17830}"]
+2. Build the Docker Image
+
+docker build -t netconf-testtool .
+3. Run the Container with Parameters
+You can specify device count and port when starting the container using environment variables (-e):
+
+
+docker run -d --name netconf-testtool -p 2022:2022 -e DEVICE_COUNT=5 -e PORT=2022 netconf-testtool
+4. Verify the Logs
+Check if the container started with the correct parameters:
+
+docker logs netconf-testtool
+Expected log output:
+
+
+Starting NETCONF test tool with 5 devices on port 2022...
+Now, your NETCONF test tool runs dynamically with different device counts and ports based on your 
