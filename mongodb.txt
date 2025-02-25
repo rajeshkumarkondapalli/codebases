@@ -1,0 +1,1 @@
+db.collectionName.deleteMany({ _id: { $regex: "^yourPattern.*", $options: "i" } });
