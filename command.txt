@@ -1,3 +1,13 @@
+for pod in $(kubectl get pods --no-headers -o custom-columns=":metadata.name" | grep '<pattern>'); do
+    echo "Thread count for tpid in $pod:"
+    kubectl exec -it "$pod" -- sh -c "jcmd \$(jps | awk '{print \$1}') Thread.print | grep -c tpid"
+done
+
+
+
+
+
+
 for pod in $(kubectl get pods --no-headers -o custom-columns=":metadata.name" | grep 'java-app'); do
     echo "Checking thread count in $pod"
     kubectl exec -it "$pod" -- sh -c "jcmd \$(jps | awk '{print \$1}') Thread.count"
