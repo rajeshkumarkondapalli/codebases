@@ -20,11 +20,11 @@ class Test {
 public class Main {
     public static void main(String[] args) {
         List<Test> list = Arrays.asList(
-            new Test("rajesh-8"),
-            new Test("rajesh-10"),
-            new Test("rajesh-9"),
-            new Test("rajesh-1"),
-            new Test("rajesh-100")
+            new Test("test-8"),
+            new Test("test-10"),
+            new Test("test-9"),
+            new Test("test-1"),
+            new Test("test-100")
         );
 
         // Sort in numerical ascending order
@@ -36,6 +36,7 @@ public class Main {
         System.out.println("Descending: " + list);
     }
 }
+
 
 
 
