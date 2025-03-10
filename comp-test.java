@@ -1,3 +1,56 @@
+
+
+import java.util.*;
+
+class Test {
+    String name;
+    String usage;
+
+    Test(String name, String usage) {
+        this.name = name;
+        this.usage = usage;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getUsage() {
+        return usage;
+    }
+
+    // Static method to extract the numeric part from the name
+    public static int extractNumber(Test t) {
+        return Integer.parseInt(t.getName().split("-")[1]);
+    }
+
+    @Override
+    public String toString() {
+        return "Test{name='" + name + "', usage='" + usage + "'}";
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        List<Test> list = Arrays.asList(
+            new Test("test-8", "6"),
+            new Test("test-10", "6"),
+            new Test("test-9", "6"),
+            new Test("test-1", "20"),
+            new Test("test-10", "1000"),
+            new Test("test-100", "30")
+        );
+
+        // Sorting based on usage (ascending), and then by numeric part of name (ascending)
+        list.sort(Comparator.comparingInt((Test t) -> Integer.parseInt(t.getUsage()))
+                .thenComparingInt(Test::extractNumber));
+
+        // Printing the sorted list
+        list.forEach(System.out::println);
+    }
+}
+
+
 import java.util.*;
 
 class Test {
