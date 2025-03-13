@@ -3,8 +3,8 @@ import java.util.concurrent.*;
 public class ThreadExample {
 
     // A simple task that takes a String, processes it, and returns a modified String
-    static class Task implements Callable<String> {
-        private final String input;
+    class Task implements Callable<String> {
+        private String input; // Non-final input string
 
         // Constructor that takes an input string
         public Task(String input) {
@@ -22,9 +22,12 @@ public class ThreadExample {
     }
 
     public static void main(String[] args) {
+        // Create an instance of the enclosing class (ThreadExample)
+        ThreadExample example = new ThreadExample();
+
         // Input string to pass to the task
         String inputString = "Hello, world!";
-        
+
         // Create a new thread that will handle the ExecutorService and Future
         Thread workerThread = new Thread(() -> {
             try {
@@ -32,7 +35,7 @@ public class ThreadExample {
                 ExecutorService executorService = Executors.newSingleThreadExecutor();
                 
                 // Submit the task with input string
-                Future<String> future = executorService.submit(new Task(inputString));
+                Future<String> future = executorService.submit(example.new Task(inputString));
                 
                 // Worker thread waits for the result of the task
                 System.out.println("Worker thread waiting for task to complete...");
