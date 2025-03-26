@@ -131,4 +131,3 @@ To add a new API to an OpenAPI spec:
 6. **Update API documentation**
 7. **Deploy and test the new API**
 
-Would you like help in writing a complete OpenAPI spec for your new API? 🚀
