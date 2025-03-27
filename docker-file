@@ -1,0 +1,71 @@
+# Use Red Hat UBI 8 as the base image
+FROM registry.access.redhat.com/ubi8/ubi:latest
+
+# Add metadata to the image
+LABEL maintainer="Your Name <your.email@example.com>" \
+      description="UBI8 with Python 3.12 for Red Hat" \
+      version="1.0"
+
+# Update the base image and install development tools
+RUN yum update -y && \
+    yum groupinstall -y "Development Tools" && \
+    yum install -y \
+        wget \
+        tar \
+        gzip \
+        zlib-devel \
+        bzip2-devel \
+        openssl-devel \
+        ncurses-devel \
+        sqlite-devel \
+        readline-devel \
+        tk-devel \
+        libffi-devel \
+        xz-devel \
+        findutils && \
+    yum clean all
+
+# Set working directory for Python installation
+WORKDIR /tmp
+
+# Download and install Python 3.12
+RUN wget https://www.python.org/ftp/python/3.12.2/Python-3.12.2.tgz && \
+    tar xzf Python-3.12.2.tgz && \
+    cd Python-3.12.2 && \
+    ./configure --enable-optimizations --prefix=/usr/local && \
+    make -j$(nproc) && \
+    make altinstall && \
+    rm -rf /tmp/Python-3.12.2* /tmp/*.tgz
+
+# Ensure pip is installed and upgraded
+
+RUN /usr/local/bin/python3.12 -m ensurepip && \
+    /usr/local/bin/python3.12 -m pip install --upgrade pip
+
+# Set working directory for application
+WORKDIR /app
+
+# Copy application files (uncomment and modify as needed)
+# COPY ./src /app
+
+# Install Python dependencies (uncomment and add if you have a requirements.txt)
+# COPY requirements.txt .
+# RUN /usr/local/bin/python3.12 -m pip install -r requirements.txt
+
+# Set Python 3.12 as the default python3 (optional, be cautious on RHEL systems)
+RUN ln -sf /usr/local/bin/python3.12 /usr/local/bin/python3
+
+# Set environment variables for better Python behavior
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PATH="/usr/local/bin:$PATH"
+
+# Expose ports (optional, uncomment if needed)
+# EXPOSE 8080
+
+# Define the command to run when container starts
+CMD ["/usr/local/bin/python3.12", "--version"]
+
+
+
+# docker build --platform linux/amd64 -t test .
