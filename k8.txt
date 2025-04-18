@@ -1,0 +1,7 @@
+while true; do
+  clear
+  date +"%Y-%m-%d %H:%M:%S"
+  echo
+  kubectl get pods
+  sleep 2
+done
